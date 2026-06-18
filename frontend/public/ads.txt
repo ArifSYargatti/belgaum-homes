@@ -1,0 +1,41 @@
+// Meta Pixel Integration Service
+export const initPixel = () => {
+  // Initialize Facebook Pixel
+  !function(f,b,e,v,n,t,s)
+  {if(f.fbq)return;n=f.fbq=function(){n.callMethod?
+  n.callMethod.apply(n,arguments):n.queue.push(arguments)};
+  if(!f._fbq)f._fbq=n;n.push=n;n.loaded=!0;n.version='2.0';
+  n.queue=[];t=b.createElement(e);t.async=!0;
+  t.src=v;s=b.getElementsByTagName(e)[0];
+  s.parentNode.insertBefore(t,s)}(window, document,'script',
+  'https://connect.facebook.net/en_US/fbevents.js');
+  
+  // Replace with your actual Pixel ID when you get it from Facebook
+  fbq('init', 'YOUR_PIXEL_ID');
+  fbq('track', 'PageView');
+};
+
+export const trackEvent = (eventName, eventData = {}) => {
+  if (typeof fbq !== 'undefined') {
+    fbq('track', eventName, eventData);
+    console.log(`Tracked ${eventName}:`, eventData);
+  }
+};
+
+export const trackLead = (leadData) => {
+  trackEvent('Lead', {
+    content_name: leadData.apartmentTitle || 'General Inquiry',
+    content_category: 'Apartment Inquiry',
+    lead_type: 'Property Inquiry'
+  });
+};
+
+export const trackViewContent = (apartment) => {
+  trackEvent('ViewContent', {
+    content_ids: [apartment.id],
+    content_name: apartment.title,
+    content_type: 'product',
+    value: parseInt(apartment.price.replace(/[^0-9]/g, '')),
+    currency: 'INR'
+  });
+};
