@@ -71,13 +71,18 @@ function App() {
             <div style={{ display: 'flex', gap: '20px', alignItems: 'center' }}>
               <div style={{ cursor: 'pointer', fontSize: '0.9rem' }}>📍 Belgaum ▼</div>
               {isLoggedIn ? (
-                <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '10px', flexWrap: 'wrap' }}>
                   <span style={{ fontSize: '0.9rem' }}>👋 Hi, {user?.name}</span>
                   <span style={{ fontSize: '0.7rem', background: 'rgba(255,255,255,0.2)', padding: '2px 8px', borderRadius: '10px' }}>
                     {getRoleBadge(user?.role)}
                   </span>
-                  <Link to="/dashboard" style={{ color: 'white', textDecoration: 'none', fontSize: '0.85rem' }}>📊 Dashboard</Link>
-                  <button onClick={handleLogout} style={{ background: '#ff6b35', border: 'none', padding: '4px 12px', borderRadius: '4px', color: 'white', cursor: 'pointer', fontSize: '0.8rem' }}>Logout</button>
+                  {/* DASHBOARD LINK - Visible when logged in */}
+                  <Link to="/dashboard" style={{ color: 'white', textDecoration: 'none', fontSize: '0.85rem', background: 'rgba(255,255,255,0.15)', padding: '4px 12px', borderRadius: '4px' }}>
+                    📊 Dashboard
+                  </Link>
+                  <button onClick={handleLogout} style={{ background: '#ff6b35', border: 'none', padding: '4px 12px', borderRadius: '4px', color: 'white', cursor: 'pointer', fontSize: '0.8rem' }}>
+                    Logout
+                  </button>
                 </div>
               ) : (
                 <div style={{ display: 'flex', gap: '10px', alignItems: 'center' }}>
@@ -161,7 +166,7 @@ function App() {
         </div>
       </footer>
 
-      {/* LOGIN MODAL - FALLBACK (if needed) */}
+      {/* LOGIN MODAL - FALLBACK */}
       {showLoginModal && (
         <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, background: 'rgba(0,0,0,0.7)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 2000 }} onClick={() => setShowLoginModal(false)}>
           <div style={{ background: 'white', padding: '25px', borderRadius: '12px', width: '90%', maxWidth: '400px' }} onClick={(e) => e.stopPropagation()}>
