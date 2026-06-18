@@ -4,6 +4,7 @@ import HomePage from './pages/HomePage';
 import BuyPage from './pages/BuyPage';
 import RentPage from './pages/RentPage';
 import SellPage from './pages/SellPage';
+import ApprovedAgentsPage from './pages/ApprovedAgentsPage';
 import HomeLoansPage from './pages/HomeLoansPage';
 import HomeInteriorsPage from './pages/HomeInteriorsPage';
 import './App.css';
@@ -31,6 +32,7 @@ function App() {
               <Link to="/buy" style={{ color: 'white', textDecoration: 'none', fontSize: '0.9rem', fontWeight: '500' }}>🏠 Buy</Link>
               <Link to="/rent" style={{ color: 'white', textDecoration: 'none', fontSize: '0.9rem', fontWeight: '500' }}>🔑 Rent</Link>
               <Link to="/sell" style={{ color: 'white', textDecoration: 'none', fontSize: '0.9rem', fontWeight: '500' }}>📈 Sell</Link>
+              <Link to="/approved-agents" style={{ color: 'white', textDecoration: 'none', fontSize: '0.9rem', fontWeight: '500' }}>⭐ Agents</Link>
               <Link to="/home-loans" style={{ color: 'white', textDecoration: 'none', fontSize: '0.9rem', fontWeight: '500' }}>🏦 Home Loans</Link>
               <Link to="/home-interiors" style={{ color: 'white', textDecoration: 'none', fontSize: '0.9rem', fontWeight: '500' }}>🛋️ Home Interiors</Link>
               <span style={{ fontSize: '0.9rem', fontWeight: '500', cursor: 'pointer' }}>Help</span>
@@ -45,6 +47,7 @@ function App() {
         <Route path="/buy" element={<BuyPage />} />
         <Route path="/rent" element={<RentPage />} />
         <Route path="/sell" element={<SellPage />} />
+        <Route path="/approved-agents" element={<ApprovedAgentsPage />} />
         <Route path="/home-loans" element={<HomeLoansPage />} />
         <Route path="/home-interiors" element={<HomeInteriorsPage />} />
       </Routes>
@@ -54,7 +57,7 @@ function App() {
         <div style={{ maxWidth: '1400px', margin: '0 auto', padding: '0 20px' }}>
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '30px', marginBottom: '30px' }}>
             <div><h3 style={{ color: 'white', marginBottom: '15px' }}>Belgaum Home Search</h3><p>Your trusted partner in finding the perfect home.</p></div>
-            <div><h4 style={{ color: 'white', marginBottom: '15px' }}>Quick Links</h4><Link to="/buy" style={{ display: 'block', color: '#ccc', textDecoration: 'none', marginBottom: '8px' }}>Buy</Link><Link to="/rent" style={{ display: 'block', color: '#ccc', textDecoration: 'none', marginBottom: '8px' }}>Rent</Link><Link to="/sell" style={{ display: 'block', color: '#ccc', textDecoration: 'none', marginBottom: '8px' }}>Sell</Link></div>
+            <div><h4 style={{ color: 'white', marginBottom: '15px' }}>Quick Links</h4><Link to="/buy" style={{ display: 'block', color: '#ccc', textDecoration: 'none', marginBottom: '8px' }}>Buy</Link><Link to="/rent" style={{ display: 'block', color: '#ccc', textDecoration: 'none', marginBottom: '8px' }}>Rent</Link><Link to="/sell" style={{ display: 'block', color: '#ccc', textDecoration: 'none', marginBottom: '8px' }}>Sell</Link><Link to="/approved-agents" style={{ display: 'block', color: '#ccc', textDecoration: 'none', marginBottom: '8px' }}>Approved Agents</Link></div>
             <div><h4 style={{ color: 'white', marginBottom: '15px' }}>Legal</h4><a style={{ display: 'block', color: '#ccc', textDecoration: 'none', marginBottom: '8px' }}>RERA</a><a style={{ display: 'block', color: '#ccc', textDecoration: 'none', marginBottom: '8px' }}>Stamp Duty</a></div>
             <div><h4 style={{ color: 'white', marginBottom: '15px' }}>Connect</h4><p>📞 +91 98765 43210</p><p>📧 info@belgaumhomes.com</p></div>
           </div>
