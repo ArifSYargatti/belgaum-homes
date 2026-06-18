@@ -3,9 +3,5 @@
   "outputDirectory": "dist",
   "devCommand": "npm run dev",
   "installCommand": "npm install",
-  "framework": "vite",
-  "routes": [
-    { "src": "/api/(.*)", "dest": "https://belgaum-homes-2.onrender.com/api/$1" },
-    { "src": "/(.*)", "dest": "/index.html" }
-  ]
+  "framework": "vite"
 }
