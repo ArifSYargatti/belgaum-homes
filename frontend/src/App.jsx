@@ -9,6 +9,7 @@ import HomeInteriorsPage from './pages/HomeInteriorsPage';
 import ApprovedAgentsPage from './pages/ApprovedAgentsPage';
 import AuthPage from './pages/AuthPage';
 import DashboardPage from './pages/DashboardPage';
+import AdminDashboard from './pages/AdminDashboard';
 import './App.css';
 
 function App() {
@@ -76,7 +77,6 @@ function App() {
                   <span style={{ fontSize: '0.7rem', background: 'rgba(255,255,255,0.2)', padding: '2px 8px', borderRadius: '10px' }}>
                     {getRoleBadge(user?.role)}
                   </span>
-                  {/* DASHBOARD LINK - Visible when logged in */}
                   <Link to="/dashboard" style={{ color: 'white', textDecoration: 'none', fontSize: '0.85rem', background: 'rgba(255,255,255,0.15)', padding: '4px 12px', borderRadius: '4px' }}>
                     📊 Dashboard
                   </Link>
@@ -105,7 +105,11 @@ function App() {
               <Link to="/approved-agents" style={{ color: 'white', textDecoration: 'none', fontSize: '0.9rem', fontWeight: '500' }}>⭐ Agents</Link>
               <Link to="/home-loans" style={{ color: 'white', textDecoration: 'none', fontSize: '0.9rem', fontWeight: '500' }}>🏦 Home Loans</Link>
               <Link to="/home-interiors" style={{ color: 'white', textDecoration: 'none', fontSize: '0.9rem', fontWeight: '500' }}>🛋️ Interiors</Link>
-              <span style={{ fontSize: '0.9rem', fontWeight: '500', cursor: 'pointer' }}>Help</span>
+              <Link to="/help" style={{ color: 'white', textDecoration: 'none', fontSize: '0.9rem', fontWeight: '500' }}>Help</Link>
+              {/* ========== ADMIN LINK ========== */}
+              {user?.role === 'admin' && (
+                <Link to="/admin" style={{ color: '#ffd700', textDecoration: 'none', fontSize: '0.9rem', fontWeight: '500' }}>🛠️ Admin</Link>
+              )}
             </div>
           </div>
         </div>
@@ -122,6 +126,7 @@ function App() {
         <Route path="/home-interiors" element={<HomeInteriorsPage />} />
         <Route path="/auth" element={<AuthPage onLogin={handleLogin} />} />
         <Route path="/dashboard" element={<DashboardPage user={user} />} />
+        <Route path="/admin" element={<AdminDashboard user={user} />} />
       </Routes>
 
       {/* FOOTER */}
@@ -146,6 +151,9 @@ function App() {
               <Link to="/approved-agents" style={{ display: 'block', color: '#ccc', textDecoration: 'none', marginBottom: '8px' }}>Agents</Link>
               {isLoggedIn && (
                 <Link to="/dashboard" style={{ display: 'block', color: '#ffd700', textDecoration: 'none', marginBottom: '8px' }}>📊 Dashboard</Link>
+              )}
+              {user?.role === 'admin' && (
+                <Link to="/admin" style={{ display: 'block', color: '#ffd700', textDecoration: 'none', marginBottom: '8px' }}>🛠️ Admin</Link>
               )}
             </div>
             <div>
