@@ -10,6 +10,7 @@ import ApprovedAgentsPage from './pages/ApprovedAgentsPage';
 import AuthPage from './pages/AuthPage';
 import DashboardPage from './pages/DashboardPage';
 import AdminDashboard from './pages/AdminDashboard';
+import PropertyDetailsPage from './pages/PropertyDetailsPage';
 import './App.css';
 
 function App() {
@@ -115,7 +116,7 @@ function App() {
         </div>
       </div>
 
-      {/* ROUTES */}
+      {/* ========== ROUTES ========== */}
       <Routes>
         <Route path="/" element={<HomePage />} />
         <Route path="/buy" element={<BuyPage />} />
@@ -127,6 +128,8 @@ function App() {
         <Route path="/auth" element={<AuthPage onLogin={handleLogin} />} />
         <Route path="/dashboard" element={<DashboardPage user={user} />} />
         <Route path="/admin" element={<AdminDashboard user={user} />} />
+        {/* ========== PROPERTY DETAILS ROUTE ========== */}
+        <Route path="/property/:id" element={<PropertyDetailsPage />} />
       </Routes>
 
       {/* FOOTER */}
@@ -149,6 +152,8 @@ function App() {
               <Link to="/rent" style={{ display: 'block', color: '#ccc', textDecoration: 'none', marginBottom: '8px' }}>Rent</Link>
               <Link to="/sell" style={{ display: 'block', color: '#ccc', textDecoration: 'none', marginBottom: '8px' }}>Sell</Link>
               <Link to="/approved-agents" style={{ display: 'block', color: '#ccc', textDecoration: 'none', marginBottom: '8px' }}>Agents</Link>
+              <Link to="/home-loans" style={{ display: 'block', color: '#ccc', textDecoration: 'none', marginBottom: '8px' }}>Home Loans</Link>
+              <Link to="/home-interiors" style={{ display: 'block', color: '#ccc', textDecoration: 'none', marginBottom: '8px' }}>Interiors</Link>
               {isLoggedIn && (
                 <Link to="/dashboard" style={{ display: 'block', color: '#ffd700', textDecoration: 'none', marginBottom: '8px' }}>📊 Dashboard</Link>
               )}
