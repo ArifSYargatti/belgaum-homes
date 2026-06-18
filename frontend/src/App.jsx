@@ -1,30 +1,19 @@
 const express = require('express');
 const cors = require('cors');
-const dotenv = require('dotenv');
-const compression = require('compression');
-const helmet = require('helmet');
-
-dotenv.config();
-
 const app = express();
 
 // Middleware
-app.use(helmet());
-app.use(compression());
-app.use(cors({
-  origin: ['http://localhost:5173', 'https://belgaum-homes.vercel.app', 'https://belgaum-homes-2.onrender.com'],
-  credentials: true
-}));
-app.use(express.json({ limit: '10mb' }));
+app.use(cors());
+app.use(express.json());
 
-// ========== ROOT ROUTE ==========
+// ========== ROOT ROUTE - FIXES "Cannot GET /" ==========
 app.get('/', (req, res) => {
   res.json({
-    message: '🏠 Belgaum Homes API is running!',
-    version: '2.0.0',
-    status: '✅ Online',
+    message: '🏠 Belgaum Homes API is live!',
+    status: '✅ Running',
     endpoints: {
-      properties: '/api/properties',
+      root: '/',
+      allProperties: '/api/properties',
       popular: '/api/properties/popular',
       exclusive: '/api/properties/exclusive',
       newLaunches: '/api/properties/new-launches',
@@ -34,7 +23,7 @@ app.get('/', (req, res) => {
   });
 });
 
-// Sample properties
+// Sample properties data
 const properties = [
   {
     _id: "1",
@@ -128,26 +117,36 @@ const properties = [
   }
 ];
 
-// API Routes
+// ========== API ROUTES ==========
+
+// Get all properties
 app.get('/api/properties', (req, res) => {
-  res.json({ success: true, data: properties, count: properties.length });
+  res.json({ 
+    success: true, 
+    data: properties, 
+    count: properties.length 
+  });
 });
 
+// Get popular properties
 app.get('/api/properties/popular', (req, res) => {
   const popular = properties.filter(p => p.premium).slice(0, 6);
   res.json({ success: true, data: popular });
 });
 
+// Get exclusive offers
 app.get('/api/properties/exclusive', (req, res) => {
   const exclusive = properties.filter(p => p.isExclusive).slice(0, 6);
   res.json({ success: true, data: exclusive });
 });
 
+// Get new launches
 app.get('/api/properties/new-launches', (req, res) => {
   const newLaunches = properties.filter(p => p.isNewLaunch).slice(0, 6);
   res.json({ success: true, data: newLaunches });
 });
 
+// Get single property
 app.get('/api/properties/:id', (req, res) => {
   const property = properties.find(p => p._id === req.params.id);
   if (property) {
@@ -157,6 +156,7 @@ app.get('/api/properties/:id', (req, res) => {
   }
 });
 
+// Submit lead
 app.post('/api/leads', (req, res) => {
   console.log('\n' + '='.repeat(50));
   console.log('📞 NEW LEAD RECEIVED!');
@@ -165,31 +165,38 @@ app.post('/api/leads', (req, res) => {
   console.log(`📧 Email: ${req.body.email}`);
   console.log(`📱 Phone: ${req.body.phone}`);
   console.log(`🏠 Property: ${req.body.propertyTitle || 'General Inquiry'}`);
-  console.log(`💬 Message: ${req.body.message || 'No message'}`);
   console.log('='.repeat(50));
   
-  res.json({ success: true, message: 'Thank you! We will contact you shortly.' });
+  res.json({ 
+    success: true, 
+    message: 'Thank you! We will contact you shortly.' 
+  });
 });
 
+// Get all leads (for admin)
 app.get('/api/leads', (req, res) => {
-  res.json({ success: true, message: 'Leads endpoint - check console for leads' });
+  res.json({ 
+    success: true, 
+    message: 'Leads endpoint - check server console for new leads' 
+  });
 });
 
+// Health check
 app.get('/api/health', (req, res) => {
   res.json({ 
     status: 'OK', 
     properties: properties.length,
-    timestamp: new Date().toISOString(),
-    uptime: process.uptime()
+    timestamp: new Date().toISOString()
   });
 });
 
-// Start server
+// ========== START SERVER ==========
 const PORT = process.env.PORT || 10000;
 app.listen(PORT, () => {
   console.log(`\n🚀 BELGAUM HOMES BACKEND`);
   console.log(`📡 Server running on port ${PORT}`);
   console.log(`✅ ${properties.length} properties loaded`);
-  console.log(`🏥 Health: /api/health`);
-  console.log(`🏠 Root: /\n`);
+  console.log(`🏠 Root: http://localhost:${PORT}/`);
+  console.log(`🏥 Health: http://localhost:${PORT}/api/health`);
+  console.log(`📋 Properties: http://localhost:${PORT}/api/properties\n`);
 });
