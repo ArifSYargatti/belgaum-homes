@@ -1,23 +1,38 @@
 const express = require('express');
 const cors = require('cors');
-const dotenv = require('dotenv');
-const compression = require('compression');
-const helmet = require('helmet');
-
-dotenv.config();
-
 const app = express();
 
-// Middleware
-app.use(helmet());
-app.use(compression());
-app.use(cors({
-  origin: ['http://localhost:5173', 'https://belgaum-homes.vercel.app', 'https://belgaum-homes-2.onrender.com'],
-  credentials: true
-}));
-app.use(express.json({ limit: '10mb' }));
+app.use(cors());
+app.use(express.json());
 
-// Sample properties (no MongoDB needed for now)
+// ========== ROOT ROUTE ==========
+app.get('/', (req, res) => {
+  res.json({
+    message: '🏠 Belgaum Homes API is running!',
+    status: '✅ Online',
+    timestamp: new Date().toISOString(),
+    endpoints: {
+      root: '/',
+      health: '/api/health',
+      properties: '/api/properties',
+      popular: '/api/properties/popular',
+      exclusive: '/api/properties/exclusive',
+      newLaunches: '/api/properties/new-launches',
+      leads: '/api/leads'
+    }
+  });
+});
+
+// Health check
+app.get('/api/health', (req, res) => {
+  res.json({
+    status: 'OK',
+    message: 'Server is healthy',
+    timestamp: new Date().toISOString()
+  });
+});
+
+// Sample properties
 const properties = [
   {
     _id: "1",
@@ -30,9 +45,7 @@ const properties = [
     location: "Near City Center Mall",
     images: ["https://placehold.co/600x400/ff6b35/white?text=Luxury+3BHK"],
     premium: true,
-    featured: true,
-    isNewLaunch: false,
-    isExclusive: true
+    featured: true
   },
   {
     _id: "2",
@@ -44,10 +57,7 @@ const properties = [
     area: "Tilakwadi",
     location: "Near Tilakwadi Market",
     images: ["https://placehold.co/600x400/4caf50/white?text=Spacious+2BHK"],
-    premium: false,
-    featured: false,
-    isNewLaunch: false,
-    isExclusive: false
+    premium: false
   },
   {
     _id: "3",
@@ -60,9 +70,7 @@ const properties = [
     location: "Near Military Hospital",
     images: ["https://placehold.co/600x400/2196f3/white?text=Modern+2BHK"],
     premium: true,
-    featured: false,
-    isNewLaunch: true,
-    isExclusive: false
+    isNewLaunch: true
   },
   {
     _id: "4",
@@ -89,10 +97,7 @@ const properties = [
     area: "Gogte Chowk",
     location: "Near Gogte College",
     images: ["https://placehold.co/600x400/ff9800/white?text=Affordable+1BHK"],
-    premium: false,
-    featured: false,
-    isNewLaunch: false,
-    isExclusive: false
+    premium: false
   },
   {
     _id: "6",
@@ -105,9 +110,7 @@ const properties = [
     location: "Near Vadagaon Bus Stand",
     images: ["https://placehold.co/600x400/00bcd4/white?text=2BHK+Vadagaon"],
     premium: false,
-    featured: false,
-    isNewLaunch: true,
-    isExclusive: false
+    isNewLaunch: true
   }
 ];
 
@@ -117,17 +120,17 @@ app.get('/api/properties', (req, res) => {
 });
 
 app.get('/api/properties/popular', (req, res) => {
-  const popular = properties.filter(p => p.premium).slice(0, 6);
+  const popular = properties.filter(p => p.premium);
   res.json({ success: true, data: popular });
 });
 
 app.get('/api/properties/exclusive', (req, res) => {
-  const exclusive = properties.filter(p => p.isExclusive).slice(0, 6);
+  const exclusive = properties.filter(p => p.isExclusive);
   res.json({ success: true, data: exclusive });
 });
 
 app.get('/api/properties/new-launches', (req, res) => {
-  const newLaunches = properties.filter(p => p.isNewLaunch).slice(0, 6);
+  const newLaunches = properties.filter(p => p.isNewLaunch);
   res.json({ success: true, data: newLaunches });
 });
 
@@ -141,37 +144,18 @@ app.get('/api/properties/:id', (req, res) => {
 });
 
 app.post('/api/leads', (req, res) => {
-  console.log('\n' + '='.repeat(50));
-  console.log('📞 NEW LEAD RECEIVED!');
-  console.log('='.repeat(50));
-  console.log(`👤 Name: ${req.body.name}`);
-  console.log(`📧 Email: ${req.body.email}`);
-  console.log(`📱 Phone: ${req.body.phone}`);
-  console.log(`🏠 Property: ${req.body.propertyTitle || 'General Inquiry'}`);
-  console.log(`💬 Message: ${req.body.message || 'No message'}`);
-  console.log('='.repeat(50));
-  
-  res.json({ success: true, message: 'Thank you! We will contact you shortly.' });
+  console.log('\n📞 NEW LEAD:', req.body);
+  res.json({ success: true, message: 'Lead submitted successfully' });
 });
 
 app.get('/api/leads', (req, res) => {
-  res.json({ success: true, message: 'Leads endpoint - check console for leads' });
-});
-
-app.get('/api/health', (req, res) => {
-  res.json({ 
-    status: 'OK', 
-    properties: properties.length,
-    timestamp: new Date().toISOString(),
-    uptime: process.uptime()
-  });
+  res.json({ success: true, message: 'Check server console for leads' });
 });
 
 // Start server
 const PORT = process.env.PORT || 10000;
-app.listen(PORT, () => {
-  console.log(`\n🚀 BELGAUM HOMES BACKEND`);
-  console.log(`📡 Server running on port ${PORT}`);
+app.listen(PORT, '0.0.0.0', () => {
+  console.log(`\n🚀 Server running on port ${PORT}`);
   console.log(`✅ ${properties.length} properties loaded`);
-  console.log(`🏥 Health: /api/health\n`);
+  console.log(`🏠 Visit: http://localhost:${PORT}/\n`);
 });
