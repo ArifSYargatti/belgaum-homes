@@ -14,7 +14,7 @@ function SellPage() {
   const [showRatesTrends, setShowRatesTrends] = useState(false);
   const [posting, setPosting] = useState(false);
 
-  const API_URL = 'https://belgaum-homes-2.onrender.com';
+  const API_URL = 'https://belgaum-homes-api.onrender.com';
 
   // Fetch properties for selling
   useEffect(() => {
@@ -23,7 +23,7 @@ function SellPage() {
 
   const fetchProperties = async () => {
     try {
-      const response = await fetch(`https://belgaum-homes-2.onrender.com/api/properties`, {
+      const response = await fetch(`https://belgaum-homes-api.onrender.com/api/properties`, {
   method: 'POST',
   headers: {
     'Content-Type': 'application/json',

@@ -14,7 +14,7 @@ function AuthPage({ onLogin }) {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
 
-  const API_URL = 'https://belgaum-homes-2.onrender.com';
+  const API_URL = 'https://belgaum-homes-api.onrender.com';
 
   const handleSubmit = async (e) => {
     e.preventDefault();

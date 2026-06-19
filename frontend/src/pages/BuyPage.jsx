@@ -8,7 +8,7 @@ function BuyPage() {
   const [priceFilter, setPriceFilter] = useState('all');
   const [bhkFilter, setBhkFilter] = useState('all');
 
-  const API_URL = 'https://belgaum-homes-2.onrender.com';
+  const API_URL = 'https://belgaum-homes-api.onrender.com';
 
   useEffect(() => {
     fetch(`${API_URL}/api/properties`)

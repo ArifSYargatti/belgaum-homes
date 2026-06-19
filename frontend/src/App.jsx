@@ -17,7 +17,7 @@ function App() {
   const [user, setUser] = useState(null);
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [showLoginModal, setShowLoginModal] = useState(false);
-  const API_URL = 'https://belgaum-homes-2.onrender.com';
+  const API_URL = 'https://belgaum-homes-api.onrender.com';
 
   // Check login status on load
   useEffect(() => {

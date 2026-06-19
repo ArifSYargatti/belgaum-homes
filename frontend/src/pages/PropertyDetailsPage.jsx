@@ -28,7 +28,7 @@ function PropertyDetailsPage() {
     message: ''
   });
 
-  const API_URL = 'https://belgaum-homes-2.onrender.com';
+  const API_URL = 'https://belgaum-homes-api.onrender.com';
 
   useEffect(() => {
     window.scrollTo(0, 0);
