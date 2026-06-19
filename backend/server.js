@@ -16,7 +16,7 @@ const app = express();
 app.use(helmet());
 app.use(compression());
 app.use(cors({
-  origin: ['http://localhost:5173', 'https://belgaum-homes.vercel.app', 'https://belgaum-homes-2.onrender.com'],
+  origin: ['http://localhost:5173', 'https://belgaum-homes.vercel.app', 'https://belgaum-homes-api.onrender.com'],
   credentials: true
 }));
 app.use(express.json({ limit: '10mb' }));
@@ -266,21 +266,24 @@ app.post('/api/auth/register', async (req, res) => {
   }
 });
 
-// Login - ADD THIS IF MISSING
+// Login - COMPLETE AND WORKING
 app.post('/api/auth/login', async (req, res) => {
   try {
     const { email, password } = req.body;
     
+    // Check if user exists
     const user = await User.findOne({ email });
     if (!user) {
       return res.status(400).json({ success: false, error: 'Invalid credentials' });
     }
     
+    // Check password
     const isMatch = await bcrypt.compare(password, user.password);
     if (!isMatch) {
       return res.status(400).json({ success: false, error: 'Invalid credentials' });
     }
     
+    // Create JWT token
     const token = jwt.sign(
       { id: user._id, email: user.email, role: user.role },
       process.env.JWT_SECRET || 'belgaum_homes_secret_2024',
@@ -304,69 +307,7 @@ app.post('/api/auth/login', async (req, res) => {
       }
     });
   } catch (error) {
-    res.status(500).json({ success: false, error: error.message });
-  }
-});
-
-// Get user profile (Protected)
-app.get('/api/auth/me', async (req, res) => {
-  try {
-    const token = req.headers.authorization?.split(' ')[1];
-    if (!token) {
-      return res.status(401).json({ success: false, error: 'No token provided' });
-    }
-    
-    const decoded = jwt.verify(token, process.env.JWT_SECRET || 'belgaum_homes_secret_2024');
-    const user = await User.findById(decoded.id).select('-password');
-    
-    if (!user) {
-      return res.status(404).json({ success: false, error: 'User not found' });
-    }
-    
-    res.json({ success: true, user });
-  } catch (error) {
-    res.status(401).json({ success: false, error: 'Invalid token' });
-  }
-});
-
-// Login
-app.post('/api/auth/login', async (req, res) => {
-  try {
-    const { email, password } = req.body;
-    
-    const user = await User.findOne({ email });
-    if (!user) {
-      return res.status(400).json({ success: false, error: 'Invalid credentials' });
-    }
-    
-    const isMatch = await bcrypt.compare(password, user.password);
-    if (!isMatch) {
-      return res.status(400).json({ success: false, error: 'Invalid credentials' });
-    }
-    
-    const token = jwt.sign(
-      { id: user._id, email: user.email, role: user.role },
-      process.env.JWT_SECRET || 'belgaum_homes_secret_2024',
-      { expiresIn: '30d' }
-    );
-    
-    console.log(`✅ ${user.role} logged in: ${user.name}`);
-    
-    res.json({
-      success: true,
-      token,
-      user: {
-        id: user._id,
-        name: user.name,
-        email: user.email,
-        phone: user.phone,
-        role: user.role,
-        verified: user.verified,
-        company: user.company,
-        location: user.location
-      }
-    });
-  } catch (error) {
+    console.error('Login error:', error);
     res.status(500).json({ success: false, error: error.message });
   }
 });
@@ -451,12 +392,11 @@ app.get('/api/properties/:id', async (req, res) => {
 
 // ========== PROTECTED ROUTES (Admin Only) ==========
 
-// CREATE PROPERTY - UPDATED WITH BETTER HANDLING
+// Create property (Admin only)
 app.post('/api/properties', async (req, res) => {
   try {
     console.log('📥 Received property data:', req.body);
     
-    // Check if user is admin
     const token = req.headers.authorization?.split(' ')[1];
     if (!token) {
       console.log('❌ No token provided');
@@ -476,7 +416,6 @@ app.post('/api/properties', async (req, res) => {
       return res.status(401).json({ success: false, error: 'Invalid token' });
     }
     
-    // Create property with all fields
     const property = new Property({
       title: req.body.title,
       description: req.body.description || '',
@@ -803,4 +742,3 @@ async function startServer() {
 }
 
 startServer();
-
