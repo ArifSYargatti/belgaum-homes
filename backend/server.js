@@ -53,6 +53,8 @@ const propertySchema = new mongoose.Schema({
   bathrooms: Number,
   area: String,
   location: String,
+  address: String,
+  coordinates: { lat: Number, lng: Number },
   advantages: [String],
   amenities: [String],
   images: [String],
@@ -63,6 +65,7 @@ const propertySchema = new mongoose.Schema({
   status: { type: String, default: 'available' },
   views: { type: Number, default: 0 },
   inquiries: { type: Number, default: 0 },
+  ownerId: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
   createdAt: { type: Date, default: Date.now }
 });
 
@@ -92,6 +95,7 @@ const agentSchema = new mongoose.Schema({
   specialties: [String],
   languages: [String],
   about: String,
+  userId: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
   createdAt: { type: Date, default: Date.now }
 });
 
@@ -192,7 +196,7 @@ async function seedDatabase() {
 
 // ========== AUTH ROUTES ==========
 
-// REGISTER
+// Register
 app.post('/api/auth/register', async (req, res) => {
   try {
     const { name, email, phone, password, role, company, location } = req.body;
@@ -371,9 +375,9 @@ app.get('/api/properties/:id', async (req, res) => {
   }
 });
 
-// ========== PROTECTED ROUTES ==========
+// ========== PROTECTED ROUTES (Admin only) ==========
 
-// Create property (Admin only)
+// Create property
 app.post('/api/properties', async (req, res) => {
   try {
     const token = req.headers.authorization?.split(' ')[1];
@@ -395,7 +399,7 @@ app.post('/api/properties', async (req, res) => {
   }
 });
 
-// Update property (Admin only)
+// Update property
 app.put('/api/properties/:id', async (req, res) => {
   try {
     const token = req.headers.authorization?.split(' ')[1];
@@ -415,7 +419,7 @@ app.put('/api/properties/:id', async (req, res) => {
   }
 });
 
-// Delete property (Admin only)
+// Delete property
 app.delete('/api/properties/:id', async (req, res) => {
   try {
     const token = req.headers.authorization?.split(' ')[1];
@@ -474,46 +478,6 @@ app.get('/api/leads', async (req, res) => {
   }
 });
 
-// Update lead status (Admin only)
-app.put('/api/leads/:id', async (req, res) => {
-  try {
-    const token = req.headers.authorization?.split(' ')[1];
-    if (!token) {
-      return res.status(401).json({ success: false, error: 'Authentication required' });
-    }
-    
-    const decoded = jwt.verify(token, process.env.JWT_SECRET || 'belgaum_homes_secret_2024');
-    if (decoded.role !== 'admin') {
-      return res.status(403).json({ success: false, error: 'Admin access required' });
-    }
-    
-    const lead = await Lead.findByIdAndUpdate(req.params.id, req.body, { new: true });
-    res.json({ success: true, data: lead });
-  } catch (error) {
-    res.status(500).json({ success: false, error: error.message });
-  }
-});
-
-// Delete lead (Admin only)
-app.delete('/api/leads/:id', async (req, res) => {
-  try {
-    const token = req.headers.authorization?.split(' ')[1];
-    if (!token) {
-      return res.status(401).json({ success: false, error: 'Authentication required' });
-    }
-    
-    const decoded = jwt.verify(token, process.env.JWT_SECRET || 'belgaum_homes_secret_2024');
-    if (decoded.role !== 'admin') {
-      return res.status(403).json({ success: false, error: 'Admin access required' });
-    }
-    
-    await Lead.findByIdAndDelete(req.params.id);
-    res.json({ success: true, message: 'Lead deleted' });
-  } catch (error) {
-    res.status(500).json({ success: false, error: error.message });
-  }
-});
-
 // ========== AGENT ROUTES ==========
 
 // Get all agents (Public)
@@ -542,68 +506,6 @@ app.post('/api/agents', async (req, res) => {
     const agent = new Agent(req.body);
     await agent.save();
     res.status(201).json({ success: true, data: agent });
-  } catch (error) {
-    res.status(500).json({ success: false, error: error.message });
-  }
-});
-
-// Update agent (Admin only)
-app.put('/api/agents/:id', async (req, res) => {
-  try {
-    const token = req.headers.authorization?.split(' ')[1];
-    if (!token) {
-      return res.status(401).json({ success: false, error: 'Authentication required' });
-    }
-    
-    const decoded = jwt.verify(token, process.env.JWT_SECRET || 'belgaum_homes_secret_2024');
-    if (decoded.role !== 'admin') {
-      return res.status(403).json({ success: false, error: 'Admin access required' });
-    }
-    
-    const agent = await Agent.findByIdAndUpdate(req.params.id, req.body, { new: true });
-    res.json({ success: true, data: agent });
-  } catch (error) {
-    res.status(500).json({ success: false, error: error.message });
-  }
-});
-
-// Delete agent (Admin only)
-app.delete('/api/agents/:id', async (req, res) => {
-  try {
-    const token = req.headers.authorization?.split(' ')[1];
-    if (!token) {
-      return res.status(401).json({ success: false, error: 'Authentication required' });
-    }
-    
-    const decoded = jwt.verify(token, process.env.JWT_SECRET || 'belgaum_homes_secret_2024');
-    if (decoded.role !== 'admin') {
-      return res.status(403).json({ success: false, error: 'Admin access required' });
-    }
-    
-    await Agent.findByIdAndDelete(req.params.id);
-    res.json({ success: true, message: 'Agent deleted' });
-  } catch (error) {
-    res.status(500).json({ success: false, error: error.message });
-  }
-});
-
-// ========== USER MANAGEMENT ==========
-
-// Get all users (Admin only)
-app.get('/api/auth/users', async (req, res) => {
-  try {
-    const token = req.headers.authorization?.split(' ')[1];
-    if (!token) {
-      return res.status(401).json({ success: false, error: 'Authentication required' });
-    }
-    
-    const decoded = jwt.verify(token, process.env.JWT_SECRET || 'belgaum_homes_secret_2024');
-    if (decoded.role !== 'admin') {
-      return res.status(403).json({ success: false, error: 'Admin access required' });
-    }
-    
-    const users = await User.find().select('-password');
-    res.json({ success: true, data: users });
   } catch (error) {
     res.status(500).json({ success: false, error: error.message });
   }
