@@ -119,6 +119,7 @@ function App() {
       {/* ========== ROUTES ========== */}
       <Routes>
         <Route path="/" element={<HomePage />} />
+        <Route path="/property/:id" element={<PropertyDetailsPage />} />
         <Route path="/buy" element={<BuyPage />} />
         <Route path="/rent" element={<RentPage />} />
         <Route path="/sell" element={<SellPage />} />

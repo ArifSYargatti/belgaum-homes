@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { useParams, Link } from 'react-router-dom';
+import { useParams, Link, useNavigate } from 'react-router-dom';
 import { MapContainer, TileLayer, Marker, Popup } from 'react-leaflet';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
@@ -14,6 +14,7 @@ L.Icon.Default.mergeOptions({
 
 function PropertyDetailsPage() {
   const { id } = useParams();
+  const navigate = useNavigate();
   const [property, setProperty] = useState(null);
   const [similarProperties, setSimilarProperties] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -31,6 +32,8 @@ function PropertyDetailsPage() {
 
   useEffect(() => {
     window.scrollTo(0, 0);
+    console.log('Property ID from URL:', id);
+    
     if (id) {
       fetchPropertyDetails(id);
     } else {
@@ -45,6 +48,7 @@ function PropertyDetailsPage() {
       setError(null);
       
       console.log('Fetching property with ID:', propertyId);
+      console.log('API URL:', `${API_URL}/api/properties/${propertyId}`);
       
       const response = await fetch(`${API_URL}/api/properties/${propertyId}`);
       const data = await response.json();
@@ -68,6 +72,7 @@ function PropertyDetailsPage() {
           console.error('Error fetching similar properties:', err);
         }
       } else {
+        console.error('Property not found:', data);
         setError(data.error || 'Property not found');
         setProperty(null);
       }
@@ -109,28 +114,40 @@ function PropertyDetailsPage() {
     window.open(`https://wa.me/?text=${encodeURIComponent(text)}`, '_blank');
   };
 
-  if (loading) return <div style={{ textAlign: 'center', padding: '50px', fontSize: '20px' }}>🏠 Loading property details...</div>;
-
-  if (error) {
+  if (loading) {
     return (
-      <div style={{ textAlign: 'center', padding: '50px' }}>
-        <h2 style={{ color: '#E31B23' }}>❌ {error}</h2>
-        <p style={{ color: '#666', marginTop: '10px' }}>The property you're looking for might have been removed or doesn't exist.</p>
-        <Link to="/" style={{ display: 'inline-block', marginTop: '20px', padding: '10px 30px', background: '#E31B23', color: 'white', textDecoration: 'none', borderRadius: '6px' }}>
-          Go Back Home
-        </Link>
+      <div style={{ textAlign: 'center', padding: '50px', fontSize: '20px' }}>
+        🏠 Loading property details...
       </div>
     );
   }
 
-  if (!property) {
+  if (error || !property) {
     return (
       <div style={{ textAlign: 'center', padding: '50px' }}>
-        <h2 style={{ color: '#E31B23' }}>🔍 Property Not Found</h2>
-        <p style={{ color: '#666', marginTop: '10px' }}>The property you're looking for could not be found.</p>
-        <Link to="/" style={{ display: 'inline-block', marginTop: '20px', padding: '10px 30px', background: '#E31B23', color: 'white', textDecoration: 'none', borderRadius: '6px' }}>
-          Browse Properties
-        </Link>
+        <h2 style={{ color: '#E31B23' }}>🔍 {error || 'Property Not Found'}</h2>
+        <p style={{ color: '#666', marginTop: '10px' }}>
+          The property you're looking for might have been removed or doesn't exist.
+        </p>
+        <p style={{ color: '#999', fontSize: '0.9rem', marginTop: '5px' }}>
+          Property ID: {id}
+        </p>
+        <button 
+          onClick={() => navigate('/buy')}
+          style={{ 
+            display: 'inline-block', 
+            marginTop: '20px', 
+            padding: '10px 30px', 
+            background: '#E31B23', 
+            color: 'white', 
+            border: 'none',
+            borderRadius: '6px', 
+            cursor: 'pointer',
+            fontSize: '1rem'
+          }}
+        >
+          Browse All Properties
+        </button>
       </div>
     );
   }
