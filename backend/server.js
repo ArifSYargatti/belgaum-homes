@@ -319,6 +319,26 @@ const PORT = process.env.PORT || 10000;
 
 async function startServer() {
   await seedDatabase();
+// Clear all properties (Admin only - for maintenance)
+app.delete('/api/properties/clear-all', async (req, res) => {
+  try {
+    const token = req.headers.authorization?.split(' ')[1];
+    if (!token) {
+      return res.status(401).json({ success: false, error: 'Authentication required' });
+    }
+    
+    const decoded = jwt.verify(token, process.env.JWT_SECRET || 'belgaum_homes_secret_2024');
+    if (decoded.role !== 'admin') {
+      return res.status(403).json({ success: false, error: 'Admin access required' });
+    }
+    
+    const result = await Property.deleteMany({});
+    console.log(`🗑️ Cleared ${result.deletedCount} properties`);
+    res.json({ success: true, message: `Cleared ${result.deletedCount} properties` });
+  } catch (error) {
+    res.status(500).json({ success: false, error: error.message });
+  }
+});
   app.listen(PORT, '0.0.0.0', () => {
     console.log(`\n🚀 BELGAUM HOMES BACKEND`);
     console.log(`📡 Server running on port ${PORT}`);
