@@ -458,3 +458,4 @@ function PropertyDetailsPage() {
 }
 
 export default PropertyDetailsPage;
+

@@ -178,3 +178,4 @@ function AuthPage({ onLogin }) {
 }
 
 export default AuthPage;
+

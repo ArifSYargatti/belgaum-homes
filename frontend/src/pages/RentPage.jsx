@@ -423,3 +423,4 @@ function RentPage() {
 }
 
 export default RentPage;
+

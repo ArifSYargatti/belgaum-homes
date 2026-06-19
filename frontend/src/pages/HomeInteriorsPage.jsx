@@ -221,3 +221,4 @@ function HomeInteriorsPage() {
 }
 
 export default HomeInteriorsPage;
+
