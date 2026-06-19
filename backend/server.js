@@ -4,39 +4,24 @@ const cors = require('cors');
 const dotenv = require('dotenv');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
-const rateLimit = require('express-rate-limit');
-const compression = require('compression');
-const helmet = require('helmet');
 
 dotenv.config();
 
 const app = express();
 
 // ========== MIDDLEWARE ==========
-app.use(helmet());
-app.use(compression());
 app.use(cors({
-  origin: ['http://localhost:5173', 'https://belgaum-homes.vercel.app', 'https://belgaum-homes-api.onrender.com'],
+  origin: ['http://localhost:5173', 'https://belgaum-homes.vercel.app', 'https://belgaum-homes-2.onrender.com'],
   credentials: true
 }));
-app.use(express.json({ limit: '10mb' }));
-
-// Rate limiting
-const limiter = rateLimit({
-  windowMs: 15 * 60 * 1000,
-  max: 100,
-  message: 'Too many requests from this IP, please try again later.'
-});
-app.use('/api/', limiter);
+app.use(express.json());
 
 // ========== MONGODB CONNECTION ==========
 const MONGODB_URI = process.env.MONGODB_URI || 'mongodb://localhost:27017/belgaum_homes';
 
 mongoose.connect(MONGODB_URI)
 .then(() => console.log('✅ MongoDB Connected Successfully!'))
-.catch(err => {
-  console.error('❌ MongoDB Connection Error:', err.message);
-});
+.catch(err => console.error('❌ MongoDB Connection Error:', err.message));
 
 // ========== SCHEMAS ==========
 
@@ -68,8 +53,6 @@ const propertySchema = new mongoose.Schema({
   bathrooms: Number,
   area: String,
   location: String,
-  address: String,
-  coordinates: { lat: Number, lng: Number },
   advantages: [String],
   amenities: [String],
   images: [String],
@@ -80,7 +63,6 @@ const propertySchema = new mongoose.Schema({
   status: { type: String, default: 'available' },
   views: { type: Number, default: 0 },
   inquiries: { type: Number, default: 0 },
-  ownerId: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
   createdAt: { type: Date, default: Date.now }
 });
 
@@ -110,7 +92,6 @@ const agentSchema = new mongoose.Schema({
   specialties: [String],
   languages: [String],
   about: String,
-  userId: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
   createdAt: { type: Date, default: Date.now }
 });
 
@@ -211,7 +192,7 @@ async function seedDatabase() {
 
 // ========== AUTH ROUTES ==========
 
-// Register
+// REGISTER
 app.post('/api/auth/register', async (req, res) => {
   try {
     const { name, email, phone, password, role, company, location } = req.body;
@@ -263,7 +244,7 @@ app.post('/api/auth/register', async (req, res) => {
   }
 });
 
-// ========== LOGIN ROUTE - FIXED ==========
+// ========== LOGIN ROUTE ==========
 app.post('/api/auth/login', async (req, res) => {
   try {
     const { email, password } = req.body;
