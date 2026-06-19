@@ -11,7 +11,7 @@ const app = express();
 
 // ========== MIDDLEWARE ==========
 app.use(cors({
-  origin: ['http://localhost:5173', 'https://belgaum-homes.vercel.app', 'https://belgaum-homes-2.onrender.com'],
+  origin: ['http://localhost:5173', 'https://belgaum-homes.vercel.app', 'https://belgaum-homes-api.onrender.com'],
   credentials: true
 }));
 app.use(express.json());
@@ -319,58 +319,7 @@ const PORT = process.env.PORT || 10000;
 
 async function startServer() {
   await seedDatabase();
-// ========== LOGIN ROUTE ==========
-app.post('/api/auth/login', async (req, res) => {
-  try {
-    const { email, password } = req.body;
-    console.log('📩 Login attempt:', email);
-    
-    // Check if user exists
-    const user = await User.findOne({ email });
-    if (!user) {
-      console.log('❌ User not found:', email);
-      return res.status(400).json({ success: false, error: 'Invalid credentials' });
-    }
-    
-    // Check password
-    const isMatch = await bcrypt.compare(password, user.password);
-    if (!isMatch) {
-      console.log('❌ Invalid password for:', email);
-      return res.status(400).json({ success: false, error: 'Invalid credentials' });
-    }
-    
-    // Create JWT token
-    const token = jwt.sign(
-      { id: user._id, email: user.email, role: user.role },
-      process.env.JWT_SECRET || 'belgaum_homes_secret_2024',
-      { expiresIn: '30d' }
-    );
-    
-    console.log(`✅ ${user.role} logged in: ${user.name}`);
-    
-    res.json({
-      success: true,
-      token,
-      user: {
-        id: user._id,
-        name: user.name,
-        email: user.email,
-        phone: user.phone,
-        role: user.role,
-        verified: user.verified,
-        company: user.company,
-        location: user.location
-      }
-    });
-  } catch (error) {
-    console.error('Login error:', error);
-    res.status(500).json({ success: false, error: error.message });
-  }
-});  
-
-
-
-app.listen(PORT, '0.0.0.0', () => {
+  app.listen(PORT, '0.0.0.0', () => {
     console.log(`\n🚀 BELGAUM HOMES BACKEND`);
     console.log(`📡 Server running on port ${PORT}`);
     console.log(`✅ MongoDB Status: ${mongoose.connection.readyState === 1 ? 'Connected' : 'Disconnected'}`);
