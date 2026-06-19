@@ -378,7 +378,6 @@ app.get('/api/properties/:id', async (req, res) => {
     if (!property) {
       return res.status(404).json({ success: false, error: 'Property not found' });
     }
-    // Increment view count
     property.views += 1;
     await property.save();
     res.json({ success: true, data: property });
@@ -389,24 +388,58 @@ app.get('/api/properties/:id', async (req, res) => {
 
 // ========== PROTECTED ROUTES (Admin Only) ==========
 
-// Create property (Admin only)
+// CREATE PROPERTY - UPDATED WITH BETTER HANDLING
 app.post('/api/properties', async (req, res) => {
   try {
+    console.log('📥 Received property data:', req.body);
+    
     // Check if user is admin
     const token = req.headers.authorization?.split(' ')[1];
     if (!token) {
+      console.log('❌ No token provided');
       return res.status(401).json({ success: false, error: 'Authentication required' });
     }
     
-    const decoded = jwt.verify(token, process.env.JWT_SECRET || 'belgaum_homes_secret_2024');
-    if (decoded.role !== 'admin') {
-      return res.status(403).json({ success: false, error: 'Admin access required' });
+    try {
+      const decoded = jwt.verify(token, process.env.JWT_SECRET || 'belgaum_homes_secret_2024');
+      console.log('👤 User:', decoded.email, 'Role:', decoded.role);
+      
+      if (decoded.role !== 'admin') {
+        console.log('❌ Not an admin:', decoded.role);
+        return res.status(403).json({ success: false, error: 'Admin access required' });
+      }
+    } catch (jwtError) {
+      console.log('❌ Invalid token:', jwtError.message);
+      return res.status(401).json({ success: false, error: 'Invalid token' });
     }
     
-    const property = new Property(req.body);
+    // Create property with all fields
+    const property = new Property({
+      title: req.body.title,
+      description: req.body.description || '',
+      price: req.body.price,
+      priceValue: req.body.priceValue || 0,
+      size: req.body.size,
+      bedrooms: req.body.bedrooms || 0,
+      bathrooms: req.body.bathrooms || 0,
+      area: req.body.area || req.body.location,
+      location: req.body.location,
+      advantages: req.body.advantages || [],
+      amenities: req.body.amenities || [],
+      images: req.body.images || ['https://placehold.co/600x400/4caf50/white?text=New+Listing'],
+      premium: req.body.premium || false,
+      featured: req.body.featured || false,
+      isNewLaunch: req.body.isNewLaunch || false,
+      isExclusive: req.body.isExclusive || false,
+      status: req.body.status || 'available'
+    });
+    
     await property.save();
+    console.log('✅ Property created successfully:', property.title);
+    
     res.status(201).json({ success: true, data: property });
   } catch (error) {
+    console.error('❌ Error creating property:', error);
     res.status(500).json({ success: false, error: error.message });
   }
 });
@@ -451,7 +484,7 @@ app.delete('/api/properties/:id', async (req, res) => {
   }
 });
 
-// ========== LEAD ROUTES (Public) ==========
+// ========== LEAD ROUTES ==========
 
 // Submit lead (Public)
 app.post('/api/leads', async (req, res) => {
@@ -470,7 +503,6 @@ app.post('/api/leads', async (req, res) => {
     console.log(`📧 Email: ${lead.email}`);
     console.log(`📱 Phone: ${lead.phone}`);
     console.log(`🏠 Property: ${lead.propertyTitle || 'General Inquiry'}`);
-    console.log(`💬 Message: ${lead.message || 'No message'}`);
     console.log('='.repeat(50));
     
     res.json({ success: true, message: 'Thank you! We will contact you shortly.' });
