@@ -19,6 +19,9 @@ async function createAdmin() {
     const salt = await bcrypt.genSalt(10);
     const hashedPassword = await bcrypt.hash('Admin@123', salt);
     
+    // Delete existing admin
+    await User.deleteOne({ email: 'admin@belgaumhomes.com' });
+    
     const admin = new User({
       name: 'Admin User',
       email: 'admin@belgaumhomes.com',

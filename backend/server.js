@@ -32,10 +32,7 @@ app.use('/api/', limiter);
 // ========== MONGODB CONNECTION ==========
 const MONGODB_URI = process.env.MONGODB_URI || 'mongodb://localhost:27017/belgaum_homes';
 
-mongoose.connect(MONGODB_URI, {
-  useNewUrlParser: true,
-  useUnifiedTopology: true,
-})
+mongoose.connect(MONGODB_URI)
 .then(() => console.log('✅ MongoDB Connected Successfully!'))
 .catch(err => {
   console.error('❌ MongoDB Connection Error:', err.message);
@@ -266,20 +263,23 @@ app.post('/api/auth/register', async (req, res) => {
   }
 });
 
-// Login - COMPLETE AND WORKING
+// ========== LOGIN ROUTE - FIXED ==========
 app.post('/api/auth/login', async (req, res) => {
   try {
     const { email, password } = req.body;
+    console.log('📩 Login attempt:', email);
     
     // Check if user exists
     const user = await User.findOne({ email });
     if (!user) {
+      console.log('❌ User not found:', email);
       return res.status(400).json({ success: false, error: 'Invalid credentials' });
     }
     
     // Check password
     const isMatch = await bcrypt.compare(password, user.password);
     if (!isMatch) {
+      console.log('❌ Invalid password for:', email);
       return res.status(400).json({ success: false, error: 'Invalid credentials' });
     }
     
@@ -333,7 +333,7 @@ app.get('/api/auth/me', async (req, res) => {
   }
 });
 
-// ========== PUBLIC PROPERTY ROUTES (No Authentication Required) ==========
+// ========== PUBLIC PROPERTY ROUTES ==========
 
 // Get all properties
 app.get('/api/properties', async (req, res) => {
@@ -375,7 +375,7 @@ app.get('/api/properties/new-launches', async (req, res) => {
   }
 });
 
-// Get single property (by ID) - PUBLIC
+// Get single property
 app.get('/api/properties/:id', async (req, res) => {
   try {
     const property = await Property.findById(req.params.id);
@@ -390,58 +390,26 @@ app.get('/api/properties/:id', async (req, res) => {
   }
 });
 
-// ========== PROTECTED ROUTES (Admin Only) ==========
+// ========== PROTECTED ROUTES ==========
 
 // Create property (Admin only)
 app.post('/api/properties', async (req, res) => {
   try {
-    console.log('📥 Received property data:', req.body);
-    
     const token = req.headers.authorization?.split(' ')[1];
     if (!token) {
-      console.log('❌ No token provided');
       return res.status(401).json({ success: false, error: 'Authentication required' });
     }
     
-    try {
-      const decoded = jwt.verify(token, process.env.JWT_SECRET || 'belgaum_homes_secret_2024');
-      console.log('👤 User:', decoded.email, 'Role:', decoded.role);
-      
-      if (decoded.role !== 'admin') {
-        console.log('❌ Not an admin:', decoded.role);
-        return res.status(403).json({ success: false, error: 'Admin access required' });
-      }
-    } catch (jwtError) {
-      console.log('❌ Invalid token:', jwtError.message);
-      return res.status(401).json({ success: false, error: 'Invalid token' });
+    const decoded = jwt.verify(token, process.env.JWT_SECRET || 'belgaum_homes_secret_2024');
+    if (decoded.role !== 'admin') {
+      return res.status(403).json({ success: false, error: 'Admin access required' });
     }
     
-    const property = new Property({
-      title: req.body.title,
-      description: req.body.description || '',
-      price: req.body.price,
-      priceValue: req.body.priceValue || 0,
-      size: req.body.size,
-      bedrooms: req.body.bedrooms || 0,
-      bathrooms: req.body.bathrooms || 0,
-      area: req.body.area || req.body.location,
-      location: req.body.location,
-      advantages: req.body.advantages || [],
-      amenities: req.body.amenities || [],
-      images: req.body.images || ['https://placehold.co/600x400/4caf50/white?text=New+Listing'],
-      premium: req.body.premium || false,
-      featured: req.body.featured || false,
-      isNewLaunch: req.body.isNewLaunch || false,
-      isExclusive: req.body.isExclusive || false,
-      status: req.body.status || 'available'
-    });
-    
+    const property = new Property(req.body);
     await property.save();
-    console.log('✅ Property created successfully:', property.title);
-    
+    console.log('✅ Property created:', property.title);
     res.status(201).json({ success: true, data: property });
   } catch (error) {
-    console.error('❌ Error creating property:', error);
     res.status(500).json({ success: false, error: error.message });
   }
 });
@@ -498,15 +466,7 @@ app.post('/api/leads', async (req, res) => {
       await Property.findByIdAndUpdate(lead.propertyId, { $inc: { inquiries: 1 } });
     }
     
-    console.log('\n' + '='.repeat(50));
-    console.log('📞 NEW LEAD RECEIVED!');
-    console.log('='.repeat(50));
-    console.log(`👤 Name: ${lead.name}`);
-    console.log(`📧 Email: ${lead.email}`);
-    console.log(`📱 Phone: ${lead.phone}`);
-    console.log(`🏠 Property: ${lead.propertyTitle || 'General Inquiry'}`);
-    console.log('='.repeat(50));
-    
+    console.log('\n📞 NEW LEAD:', lead.name, '-', lead.phone);
     res.json({ success: true, message: 'Thank you! We will contact you shortly.' });
   } catch (error) {
     res.status(500).json({ success: false, error: error.message });
@@ -646,7 +606,7 @@ app.delete('/api/agents/:id', async (req, res) => {
   }
 });
 
-// ========== USER MANAGEMENT (Admin only) ==========
+// ========== USER MANAGEMENT ==========
 
 // Get all users (Admin only)
 app.get('/api/auth/users', async (req, res) => {
