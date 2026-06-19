@@ -23,7 +23,14 @@ function SellPage() {
 
   const fetchProperties = async () => {
     try {
-      const response = await fetch(`${API_URL}/api/properties`);
+      const response = await fetch(`https://belgaum-homes-2.onrender.com/api/properties`, {
+  method: 'POST',
+  headers: {
+    'Content-Type': 'application/json',
+    'Authorization': `Bearer ${token}`
+  },
+  body: JSON.stringify(propertyData)
+  });
       const data = await response.json();
       setProperties(data.data || []);
     } catch (err) {
