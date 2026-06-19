@@ -17,6 +17,7 @@ function PropertyDetailsPage() {
   const [property, setProperty] = useState(null);
   const [similarProperties, setSimilarProperties] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
   const [showInquiryForm, setShowInquiryForm] = useState(false);
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const [lead, setLead] = useState({
@@ -30,27 +31,50 @@ function PropertyDetailsPage() {
 
   useEffect(() => {
     window.scrollTo(0, 0);
-    fetchPropertyDetails();
+    if (id) {
+      fetchPropertyDetails(id);
+    } else {
+      setError('No property ID provided');
+      setLoading(false);
+    }
   }, [id]);
 
-  const fetchPropertyDetails = async () => {
+  const fetchPropertyDetails = async (propertyId) => {
     try {
-      const response = await fetch(`${API_URL}/api/properties/${id}`);
+      setLoading(true);
+      setError(null);
+      
+      console.log('Fetching property with ID:', propertyId);
+      
+      const response = await fetch(`${API_URL}/api/properties/${propertyId}`);
       const data = await response.json();
-      if (data.success) {
+      
+      console.log('API Response:', data);
+      
+      if (data.success && data.data) {
         setProperty(data.data);
+        
         // Fetch similar properties
-        const similarRes = await fetch(`${API_URL}/api/properties`);
-        const similarData = await similarRes.json();
-        if (similarData.success) {
-          const similar = similarData.data
-            .filter(p => p._id !== id && p.area === data.data.area)
-            .slice(0, 4);
-          setSimilarProperties(similar);
+        try {
+          const similarRes = await fetch(`${API_URL}/api/properties`);
+          const similarData = await similarRes.json();
+          if (similarData.success) {
+            const similar = similarData.data
+              .filter(p => p._id !== propertyId && p.area === data.data.area)
+              .slice(0, 4);
+            setSimilarProperties(similar);
+          }
+        } catch (err) {
+          console.error('Error fetching similar properties:', err);
         }
+      } else {
+        setError(data.error || 'Property not found');
+        setProperty(null);
       }
     } catch (error) {
       console.error('Error fetching property:', error);
+      setError('Failed to load property details. Please try again.');
+      setProperty(null);
     } finally {
       setLoading(false);
     }
@@ -72,6 +96,8 @@ function PropertyDetailsPage() {
         alert('✅ Thank you! We will contact you shortly.');
         setShowInquiryForm(false);
         setLead({ name: '', email: '', phone: '', message: '' });
+      } else {
+        alert('❌ Error submitting inquiry. Please try again.');
       }
     } catch (error) {
       alert('❌ Error submitting inquiry. Please try again.');
@@ -85,7 +111,29 @@ function PropertyDetailsPage() {
 
   if (loading) return <div style={{ textAlign: 'center', padding: '50px', fontSize: '20px' }}>🏠 Loading property details...</div>;
 
-  if (!property) return <div style={{ textAlign: 'center', padding: '50px', fontSize: '20px' }}>❌ Property not found</div>;
+  if (error) {
+    return (
+      <div style={{ textAlign: 'center', padding: '50px' }}>
+        <h2 style={{ color: '#E31B23' }}>❌ {error}</h2>
+        <p style={{ color: '#666', marginTop: '10px' }}>The property you're looking for might have been removed or doesn't exist.</p>
+        <Link to="/" style={{ display: 'inline-block', marginTop: '20px', padding: '10px 30px', background: '#E31B23', color: 'white', textDecoration: 'none', borderRadius: '6px' }}>
+          Go Back Home
+        </Link>
+      </div>
+    );
+  }
+
+  if (!property) {
+    return (
+      <div style={{ textAlign: 'center', padding: '50px' }}>
+        <h2 style={{ color: '#E31B23' }}>🔍 Property Not Found</h2>
+        <p style={{ color: '#666', marginTop: '10px' }}>The property you're looking for could not be found.</p>
+        <Link to="/" style={{ display: 'inline-block', marginTop: '20px', padding: '10px 30px', background: '#E31B23', color: 'white', textDecoration: 'none', borderRadius: '6px' }}>
+          Browse Properties
+        </Link>
+      </div>
+    );
+  }
 
   const images = property.images || ['https://placehold.co/800x500/eee/ccc?text=No+Image'];
 
@@ -112,6 +160,9 @@ function PropertyDetailsPage() {
                   src={images[currentImageIndex]}
                   alt={property.title}
                   style={{ width: '100%', height: '400px', objectFit: 'cover' }}
+                  onError={(e) => {
+                    e.target.src = 'https://placehold.co/800x500/eee/ccc?text=No+Image';
+                  }}
                 />
                 {property.premium && (
                   <span style={{
@@ -158,6 +209,9 @@ function PropertyDetailsPage() {
                       borderRadius: '6px',
                       cursor: 'pointer',
                       border: currentImageIndex === idx ? '3px solid #E31B23' : '2px solid #e0e0e0'
+                    }}
+                    onError={(e) => {
+                      e.target.src = 'https://placehold.co/80x60/eee/ccc?text=No+Image';
                     }}
                   />
                 ))}

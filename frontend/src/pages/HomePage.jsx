@@ -11,7 +11,7 @@ function HomePage() {
   const [priceFilter, setPriceFilter] = useState('all');
   const [bhkFilter, setBhkFilter] = useState('all');
 
-  const API_URL = 'http://localhost:10000';
+  const API_URL = 'https://belgaum-homes-2.onrender.com';
 
   useEffect(() => {
     const fetchData = async () => {
@@ -34,7 +34,6 @@ function HomePage() {
         setNewLaunches(newData.data || []);
       } catch (error) {
         console.error('Error fetching data:', error);
-        // Fallback to sample data if backend fails
         setProperties([]);
       } finally {
         setLoading(false);
