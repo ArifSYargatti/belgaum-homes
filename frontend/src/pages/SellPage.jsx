@@ -14,7 +14,8 @@ function SellPage() {
   const [showRatesTrends, setShowRatesTrends] = useState(false);
   const [posting, setPosting] = useState(false);
 
-  const API_URL = 'https://belgaum-homes-api.onrender.com';
+  // IMPORTANT: Use the correct backend URL
+  const API_URL = 'https://belgaum-homes-2.onrender.com';
 
   // Fetch properties for selling
   useEffect(() => {
@@ -23,14 +24,7 @@ function SellPage() {
 
   const fetchProperties = async () => {
     try {
-      const response = await fetch(`https://belgaum-homes-api.onrender.com/api/properties`, {
-  method: 'POST',
-  headers: {
-    'Content-Type': 'application/json',
-    'Authorization': `Bearer ${token}`
-  },
-  body: JSON.stringify(propertyData)
-  });
+      const response = await fetch(`${API_URL}/api/properties`);
       const data = await response.json();
       setProperties(data.data || []);
     } catch (err) {
@@ -90,9 +84,7 @@ function SellPage() {
       featured: false,
       isNewLaunch: false,
       isExclusive: false,
-      status: 'available',
-      ownerName: yourName,
-      ownerPhone: phone
+      status: 'available'
     };
 
     setPosting(true);
@@ -595,4 +587,3 @@ function SellPage() {
 }
 
 export default SellPage;
-
