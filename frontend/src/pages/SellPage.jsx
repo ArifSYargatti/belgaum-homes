@@ -29,7 +29,72 @@ function SellPage() {
       });
   }, []);
 
-  // Property Valuation Calculator
+  // ==================== POST PROPERTY ====================
+  const handlePostProperty = async (e) => {
+    e.preventDefault();
+    const form = e.target;
+    
+    const propertyData = {
+      title: form.title.value,
+      price: form.price.value,
+      priceValue: parseInt(form.price.value.replace(/[^0-9]/g, '')),
+      size: form.size.value,
+      bedrooms: parseInt(form.bedrooms.value) || 0,
+      bathrooms: parseInt(form.bathrooms.value) || 0,
+      area: form.location.value,
+      location: form.location.value,
+      description: form.description.value,
+      propertyType: form.propertyType.value,
+      advantages: form.advantages.value ? form.advantages.value.split(',').map(a => a.trim()) : [],
+      amenities: form.amenities.value ? form.amenities.value.split(',').map(a => a.trim()) : [],
+      images: ['https://placehold.co/600x400/eee/ccc?text=New+Property'],
+      premium: false,
+      featured: false,
+      isNewLaunch: false,
+      isExclusive: false,
+      status: 'available'
+    };
+
+    try {
+      const token = localStorage.getItem('token');
+      const headers = {
+        'Content-Type': 'application/json'
+      };
+      
+      if (token) {
+        headers['Authorization'] = `Bearer ${token}`;
+      }
+      
+      const response = await fetch(`${API_URL}/api/properties`, {
+        method: 'POST',
+        headers: headers,
+        body: JSON.stringify(propertyData)
+      });
+
+      const data = await response.json();
+      
+      if (data.success) {
+        alert('✅ Your property has been listed successfully! It will appear on the website shortly.');
+        setShowPostProperty(false);
+        form.reset();
+        // Refresh properties
+        window.location.reload();
+      } else {
+        alert('❌ Failed to list property: ' + (data.error || 'Please try again'));
+      }
+    } catch (error) {
+      console.error('Error posting property:', error);
+      alert('❌ Error posting property. Please try again.');
+    }
+  };
+
+  // ==================== AD PACKAGES ====================
+  const handleAdPackageSelect = (packageName) => {
+    alert(`📢 You selected the ${packageName} package!\n\nOur team will contact you shortly.\n\n📞 For immediate assistance: +91 98765 43210`);
+    setShowAdPackages(false);
+  };
+
+  // ==================== PROPERTY VALUATION ====================
   const [propertySize, setPropertySize] = useState('');
   const [propertyType, setPropertyType] = useState('apartment');
   const [location, setLocation] = useState('shahapur');
@@ -58,18 +123,7 @@ function SellPage() {
     }
   };
 
-  const handlePostProperty = (e) => {
-    e.preventDefault();
-    alert('✅ Your property has been listed successfully!\n\nWe will notify you when a buyer shows interest.\n\n📞 For support: +91 98765 43210');
-    setShowPostProperty(false);
-  };
-
-  const handleAdPackageSelect = (packageName) => {
-    alert(`📢 You selected the ${packageName} package!\n\nOur team will contact you shortly.\n\n📞 For immediate assistance: +91 98765 43210`);
-    setShowAdPackages(false);
-  };
-
-  // Ad Packages Data
+  // ==================== AD PACKAGES DATA ====================
   const adPackages = [
     { 
       name: 'Basic', 
@@ -250,39 +304,46 @@ function SellPage() {
           </div>
         )}
 
-        {/* ===== MODALS ===== */}
-
-        {/* Post Property Modal */}
+        {/* ============================================================ */}
+        {/* ===== POST PROPERTY MODAL ===== */}
+        {/* ============================================================ */}
         {showPostProperty && (
           <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, background: 'rgba(0,0,0,0.7)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 2000, padding: '20px' }} onClick={() => setShowPostProperty(false)}>
-            <div style={{ background: 'white', borderRadius: '16px', padding: '30px', maxWidth: '500px', width: '100%', maxHeight: '80vh', overflow: 'auto' }} onClick={(e) => e.stopPropagation()}>
-              <h2 style={{ marginBottom: '20px' }}>📝 Post Property - FREE</h2>
+            <div style={{ background: 'white', borderRadius: '16px', padding: '30px', maxWidth: '550px', width: '100%', maxHeight: '85vh', overflow: 'auto' }} onClick={(e) => e.stopPropagation()}>
+              <h2 style={{ marginBottom: '5px' }}>📝 Post Property</h2>
+              <p style={{ color: '#4caf50', fontWeight: 'bold', marginBottom: '20px' }}>✦ FREE Listing ✦</p>
               <form onSubmit={handlePostProperty}>
-                <input type="text" placeholder="Property Title" required style={{ width: '100%', padding: '10px', marginBottom: '15px', border: '1px solid #ddd', borderRadius: '6px' }} />
-                <select required style={{ width: '100%', padding: '10px', marginBottom: '15px', border: '1px solid #ddd', borderRadius: '6px' }}>
-                  <option value="">Property Type</option>
-                  <option>Apartment/Flat</option>
-                  <option>Independent House</option>
-                  <option>Villa</option>
-                  <option>Plot/Land</option>
-                  <option>Commercial</option>
+                <input type="text" name="title" placeholder="Property Title *" required style={{ width: '100%', padding: '10px', marginBottom: '12px', border: '1px solid #ddd', borderRadius: '6px' }} />
+                <select name="propertyType" required style={{ width: '100%', padding: '10px', marginBottom: '12px', border: '1px solid #ddd', borderRadius: '6px' }}>
+                  <option value="">Property Type *</option>
+                  <option value="Apartment/Flat">Apartment/Flat</option>
+                  <option value="Independent House">Independent House</option>
+                  <option value="Villa">Villa</option>
+                  <option value="Plot/Land">Plot/Land</option>
+                  <option value="Commercial">Commercial</option>
                 </select>
-                <input type="text" placeholder="Location (e.g., Shahapur)" required style={{ width: '100%', padding: '10px', marginBottom: '15px', border: '1px solid #ddd', borderRadius: '6px' }} />
-                <input type="number" placeholder="Price (₹)" required style={{ width: '100%', padding: '10px', marginBottom: '15px', border: '1px solid #ddd', borderRadius: '6px' }} />
-                <input type="number" placeholder="Area (sq ft)" required style={{ width: '100%', padding: '10px', marginBottom: '15px', border: '1px solid #ddd', borderRadius: '6px' }} />
-                <input type="number" placeholder="Bedrooms" style={{ width: '100%', padding: '10px', marginBottom: '15px', border: '1px solid #ddd', borderRadius: '6px' }} />
-                <input type="number" placeholder="Bathrooms" style={{ width: '100%', padding: '10px', marginBottom: '15px', border: '1px solid #ddd', borderRadius: '6px' }} />
-                <textarea placeholder="Property Description" rows="3" style={{ width: '100%', padding: '10px', marginBottom: '15px', border: '1px solid #ddd', borderRadius: '6px' }} />
-                <input type="text" placeholder="Your Name" required style={{ width: '100%', padding: '10px', marginBottom: '15px', border: '1px solid #ddd', borderRadius: '6px' }} />
-                <input type="tel" placeholder="Phone Number" required style={{ width: '100%', padding: '10px', marginBottom: '15px', border: '1px solid #ddd', borderRadius: '6px' }} />
-                <button type="submit" style={{ width: '100%', padding: '12px', background: '#4caf50', color: 'white', border: 'none', borderRadius: '6px', cursor: 'pointer', fontWeight: 'bold' }}>Post Property FREE →</button>
+                <input type="text" name="location" placeholder="Location (e.g., Shahapur) *" required style={{ width: '100%', padding: '10px', marginBottom: '12px', border: '1px solid #ddd', borderRadius: '6px' }} />
+                <input type="text" name="price" placeholder="Price (e.g., ₹85,00,000) *" required style={{ width: '100%', padding: '10px', marginBottom: '12px', border: '1px solid #ddd', borderRadius: '6px' }} />
+                <input type="text" name="size" placeholder="Area (e.g., 1500 sq ft) *" required style={{ width: '100%', padding: '10px', marginBottom: '12px', border: '1px solid #ddd', borderRadius: '6px' }} />
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px' }}>
+                  <input type="number" name="bedrooms" placeholder="Bedrooms (0 for commercial)" style={{ padding: '10px', marginBottom: '12px', border: '1px solid #ddd', borderRadius: '6px' }} />
+                  <input type="number" name="bathrooms" placeholder="Bathrooms" style={{ padding: '10px', marginBottom: '12px', border: '1px solid #ddd', borderRadius: '6px' }} />
+                </div>
+                <textarea name="description" placeholder="Property Description *" rows="3" required style={{ width: '100%', padding: '10px', marginBottom: '12px', border: '1px solid #ddd', borderRadius: '6px' }} />
+                <input type="text" name="amenities" placeholder="Amenities (comma separated - Gym, Pool, Security)" style={{ width: '100%', padding: '10px', marginBottom: '12px', border: '1px solid #ddd', borderRadius: '6px' }} />
+                <input type="text" name="advantages" placeholder="Advantages (comma separated - Near school, Market)" style={{ width: '100%', padding: '10px', marginBottom: '12px', border: '1px solid #ddd', borderRadius: '6px' }} />
+                <input type="text" name="yourName" placeholder="Your Name *" required style={{ width: '100%', padding: '10px', marginBottom: '12px', border: '1px solid #ddd', borderRadius: '6px' }} />
+                <input type="tel" name="phone" placeholder="Phone Number *" required style={{ width: '100%', padding: '10px', marginBottom: '12px', border: '1px solid #ddd', borderRadius: '6px' }} />
+                <button type="submit" style={{ width: '100%', padding: '12px', background: '#4caf50', color: 'white', border: 'none', borderRadius: '6px', cursor: 'pointer', fontWeight: 'bold' }}>📤 Post Property FREE</button>
                 <button type="button" onClick={() => setShowPostProperty(false)} style={{ width: '100%', marginTop: '10px', padding: '10px', background: '#f0f0f0', border: 'none', borderRadius: '6px', cursor: 'pointer' }}>Cancel</button>
               </form>
             </div>
           </div>
         )}
 
-        {/* Dashboard Modal */}
+        {/* ============================================================ */}
+        {/* ===== DASHBOARD MODAL ===== */}
+        {/* ============================================================ */}
         {showDashboard && (
           <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, background: 'rgba(0,0,0,0.7)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 2000, padding: '20px' }} onClick={() => setShowDashboard(false)}>
             <div style={{ background: 'white', borderRadius: '16px', padding: '30px', maxWidth: '500px', width: '100%' }} onClick={(e) => e.stopPropagation()}>
@@ -314,7 +375,9 @@ function SellPage() {
           </div>
         )}
 
-        {/* Ad Packages Modal */}
+        {/* ============================================================ */}
+        {/* ===== AD PACKAGES MODAL ===== */}
+        {/* ============================================================ */}
         {showAdPackages && (
           <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, background: 'rgba(0,0,0,0.7)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 2000, padding: '20px' }} onClick={() => setShowAdPackages(false)}>
             <div style={{ background: 'white', borderRadius: '16px', padding: '30px', maxWidth: '800px', width: '100%', maxHeight: '80vh', overflow: 'auto' }} onClick={(e) => e.stopPropagation()}>
@@ -341,7 +404,9 @@ function SellPage() {
           </div>
         )}
 
-        {/* Developer Lounge Modal */}
+        {/* ============================================================ */}
+        {/* ===== DEVELOPER LOUNGE MODAL ===== */}
+        {/* ============================================================ */}
         {showDeveloperLounge && (
           <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, background: 'rgba(0,0,0,0.7)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 2000, padding: '20px' }} onClick={() => setShowDeveloperLounge(false)}>
             <div style={{ background: 'white', borderRadius: '16px', padding: '30px', maxWidth: '500px', width: '100%' }} onClick={(e) => e.stopPropagation()}>
@@ -369,7 +434,9 @@ function SellPage() {
           </div>
         )}
 
-        {/* Sales Enquiry Modal */}
+        {/* ============================================================ */}
+        {/* ===== SALES ENQUIRY MODAL ===== */}
+        {/* ============================================================ */}
         {showSalesEnquiry && (
           <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, background: 'rgba(0,0,0,0.7)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 2000, padding: '20px' }} onClick={() => setShowSalesEnquiry(false)}>
             <div style={{ background: 'white', borderRadius: '16px', padding: '30px', maxWidth: '500px', width: '100%' }} onClick={(e) => e.stopPropagation()}>
@@ -399,7 +466,9 @@ function SellPage() {
           </div>
         )}
 
-        {/* Property Valuation Modal */}
+        {/* ============================================================ */}
+        {/* ===== PROPERTY VALUATION MODAL ===== */}
+        {/* ============================================================ */}
         {showValuation && (
           <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, background: 'rgba(0,0,0,0.7)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 2000, padding: '20px' }} onClick={() => setShowValuation(false)}>
             <div style={{ background: 'white', borderRadius: '16px', padding: '30px', maxWidth: '500px', width: '100%' }} onClick={(e) => e.stopPropagation()}>
@@ -442,7 +511,9 @@ function SellPage() {
           </div>
         )}
 
-        {/* Rates & Trends Modal */}
+        {/* ============================================================ */}
+        {/* ===== RATES & TRENDS MODAL ===== */}
+        {/* ============================================================ */}
         {showRatesTrends && (
           <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, background: 'rgba(0,0,0,0.7)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 2000, padding: '20px' }} onClick={() => setShowRatesTrends(false)}>
             <div style={{ background: 'white', borderRadius: '16px', padding: '30px', maxWidth: '600px', width: '100%' }} onClick={(e) => e.stopPropagation()}>
@@ -458,11 +529,11 @@ function SellPage() {
                     </tr>
                   </thead>
                   <tbody>
-                    <tr style={{ borderBottom: '1px solid #e0e0e0' }}><td style={{ padding: '10px' }}><strong>Shahapur</strong></td><td style={{ padding: '10px', color: '#E31B23' }}>₹5,500</td><td style={{ padding: '10px', color: '#E31B23' }}>₹6,500</td><td style={{ padding: '10px', color: '#E31B23' }}>₹8,500</td></tr>
-                    <tr style={{ borderBottom: '1px solid #e0e0e0' }}><td style={{ padding: '10px' }}><strong>Tilakwadi</strong></td><td style={{ padding: '10px', color: '#E31B23' }}>₹4,500</td><td style={{ padding: '10px', color: '#E31B23' }}>₹5,500</td><td style={{ padding: '10px', color: '#E31B23' }}>₹7,500</td></tr>
-                    <tr style={{ borderBottom: '1px solid #e0e0e0' }}><td style={{ padding: '10px' }}><strong>Camp Area</strong></td><td style={{ padding: '10px', color: '#E31B23' }}>₹5,000</td><td style={{ padding: '10px', color: '#E31B23' }}>₹6,000</td><td style={{ padding: '10px', color: '#E31B23' }}>₹8,000</td></tr>
-                    <tr style={{ borderBottom: '1px solid #e0e0e0' }}><td style={{ padding: '10px' }}><strong>RPD Cross</strong></td><td style={{ padding: '10px', color: '#E31B23' }}>₹4,000</td><td style={{ padding: '10px', color: '#E31B23' }}>₹5,000</td><td style={{ padding: '10px', color: '#E31B23' }}>₹7,000</td></tr>
-                    <tr><td style={{ padding: '10px' }}><strong>Gogte Chowk</strong></td><td style={{ padding: '10px', color: '#E31B23' }}>₹3,500</td><td style={{ padding: '10px', color: '#E31B23' }}>₹4,500</td><td style={{ padding: '10px', color: '#E31B23' }}>₹6,500</td></tr>
+                    <tr style={{ borderBottom: '1px solid #e0e0e0' }}><td><strong>Shahapur</strong></td><td style={{ color: '#E31B23' }}>₹5,500</td><td style={{ color: '#E31B23' }}>₹6,500</td><td style={{ color: '#E31B23' }}>₹8,500</td></tr>
+                    <tr style={{ borderBottom: '1px solid #e0e0e0' }}><td><strong>Tilakwadi</strong></td><td style={{ color: '#E31B23' }}>₹4,500</td><td style={{ color: '#E31B23' }}>₹5,500</td><td style={{ color: '#E31B23' }}>₹7,500</td></tr>
+                    <tr style={{ borderBottom: '1px solid #e0e0e0' }}><td><strong>Camp Area</strong></td><td style={{ color: '#E31B23' }}>₹5,000</td><td style={{ color: '#E31B23' }}>₹6,000</td><td style={{ color: '#E31B23' }}>₹8,000</td></tr>
+                    <tr style={{ borderBottom: '1px solid #e0e0e0' }}><td><strong>RPD Cross</strong></td><td style={{ color: '#E31B23' }}>₹4,000</td><td style={{ color: '#E31B23' }}>₹5,000</td><td style={{ color: '#E31B23' }}>₹7,000</td></tr>
+                    <tr><td><strong>Gogte Chowk</strong></td><td style={{ color: '#E31B23' }}>₹3,500</td><td style={{ color: '#E31B23' }}>₹4,500</td><td style={{ color: '#E31B23' }}>₹6,500</td></tr>
                   </tbody>
                 </table>
               </div>
