@@ -1,6 +1,9 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import { Link } from 'react-router-dom';
 
 function SellPage() {
+  const [properties, setProperties] = useState([]);
+  const [loading, setLoading] = useState(true);
   const [activeSection, setActiveSection] = useState('owner');
   const [showPostProperty, setShowPostProperty] = useState(false);
   const [showDashboard, setShowDashboard] = useState(false);
@@ -9,6 +12,22 @@ function SellPage() {
   const [showSalesEnquiry, setShowSalesEnquiry] = useState(false);
   const [showValuation, setShowValuation] = useState(false);
   const [showRatesTrends, setShowRatesTrends] = useState(false);
+
+  const API_URL = 'https://belgaum-homes-2.onrender.com';
+
+  // Fetch properties for selling
+  useEffect(() => {
+    fetch(`${API_URL}/api/properties`)
+      .then(res => res.json())
+      .then(data => {
+        setProperties(data.data || []);
+        setLoading(false);
+      })
+      .catch(err => {
+        console.error('Error:', err);
+        setLoading(false);
+      });
+  }, []);
 
   // Property Valuation Calculator
   const [propertySize, setPropertySize] = useState('');
@@ -77,6 +96,8 @@ function SellPage() {
       popular: false
     }
   ];
+
+  if (loading) return <div style={{ textAlign: 'center', padding: '50px' }}>📈 Loading sell page...</div>;
 
   return (
     <div style={{ padding: '40px 0', background: '#f5f7fb' }}>
@@ -269,7 +290,7 @@ function SellPage() {
               <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '15px', marginBottom: '20px' }}>
                 <div style={{ background: '#f8f9fa', padding: '15px', borderRadius: '8px', textAlign: 'center' }}>
                   <span style={{ fontSize: '2rem' }}>🏠</span>
-                  <p style={{ fontWeight: 'bold' }}>3</p>
+                  <p style={{ fontWeight: 'bold' }}>{properties.length}</p>
                   <p style={{ color: '#666', fontSize: '0.8rem' }}>Active Listings</p>
                 </div>
                 <div style={{ background: '#f8f9fa', padding: '15px', borderRadius: '8px', textAlign: 'center' }}>
@@ -348,35 +369,35 @@ function SellPage() {
           </div>
         )}
 
-       {/* Sales Enquiry Modal */}
-{showSalesEnquiry && (
-  <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, background: 'rgba(0,0,0,0.7)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 2000, padding: '20px' }} onClick={() => setShowSalesEnquiry(false)}>
-    <div style={{ background: 'white', borderRadius: '16px', padding: '30px', maxWidth: '500px', width: '100%' }} onClick={(e) => e.stopPropagation()}>
-      <h2 style={{ marginBottom: '20px' }}>📞 Sales Enquiries</h2>
-      <div style={{ display: 'flex', flexDirection: 'column', gap: '15px' }}>
-        <div style={{ padding: '15px', background: '#f8f9fa', borderRadius: '8px', borderLeft: '3px solid #ff9800' }}>
-          <p><strong>Rahul Sharma</strong></p>
-          <p style={{ color: '#666', fontSize: '0.85rem' }}>📱 +91 98765 43210</p>
-          <p style={{ color: '#666', fontSize: '0.85rem' }}>🏠 Interested in Shahapur property</p>
-          <p style={{ color: '#666', fontSize: '0.75rem' }}>2 hours ago</p>
-        </div>
-        <div style={{ padding: '15px', background: '#f8f9fa', borderRadius: '8px', borderLeft: '3px solid #4caf50' }}>
-          <p><strong>Priya Patel</strong></p>
-          <p style={{ color: '#666', fontSize: '0.85rem' }}>📱 +91 98765 43211</p>
-          <p style={{ color: '#666', fontSize: '0.85rem' }}>🏠 Looking for 3BHK in Tilakwadi</p>
-          <p style={{ color: '#666', fontSize: '0.75rem' }}>1 day ago</p>
-        </div>
-        <div style={{ padding: '15px', background: '#f8f9fa', borderRadius: '8px', borderLeft: '3px solid #2196f3' }}>
-          <p><strong>Amit Kumar</strong></p>
-          <p style={{ color: '#666', fontSize: '0.85rem' }}>📱 +91 98765 43212</p>
-          <p style={{ color: '#666', fontSize: '0.85rem' }}>🏠 Wants to sell property in Camp</p>
-          <p style={{ color: '#666', fontSize: '0.75rem' }}>2 days ago</p>
-        </div>
-      </div>
-      <button onClick={() => setShowSalesEnquiry(false)} style={{ width: '100%', marginTop: '20px', padding: '10px', background: '#f0f0f0', border: 'none', borderRadius: '6px', cursor: 'pointer' }}>Close</button>
-    </div>
-  </div>
-)}
+        {/* Sales Enquiry Modal */}
+        {showSalesEnquiry && (
+          <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, background: 'rgba(0,0,0,0.7)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 2000, padding: '20px' }} onClick={() => setShowSalesEnquiry(false)}>
+            <div style={{ background: 'white', borderRadius: '16px', padding: '30px', maxWidth: '500px', width: '100%' }} onClick={(e) => e.stopPropagation()}>
+              <h2 style={{ marginBottom: '20px' }}>📞 Sales Enquiries</h2>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '15px' }}>
+                <div style={{ padding: '15px', background: '#f8f9fa', borderRadius: '8px', borderLeft: '3px solid #ff9800' }}>
+                  <p><strong>Rahul Sharma</strong></p>
+                  <p style={{ color: '#666', fontSize: '0.85rem' }}>📱 +91 98765 43210</p>
+                  <p style={{ color: '#666', fontSize: '0.85rem' }}>🏠 Interested in Shahapur property</p>
+                  <p style={{ color: '#666', fontSize: '0.75rem' }}>2 hours ago</p>
+                </div>
+                <div style={{ padding: '15px', background: '#f8f9fa', borderRadius: '8px', borderLeft: '3px solid #4caf50' }}>
+                  <p><strong>Priya Patel</strong></p>
+                  <p style={{ color: '#666', fontSize: '0.85rem' }}>📱 +91 98765 43211</p>
+                  <p style={{ color: '#666', fontSize: '0.85rem' }}>🏠 Looking for 3BHK in Tilakwadi</p>
+                  <p style={{ color: '#666', fontSize: '0.75rem' }}>1 day ago</p>
+                </div>
+                <div style={{ padding: '15px', background: '#f8f9fa', borderRadius: '8px', borderLeft: '3px solid #2196f3' }}>
+                  <p><strong>Amit Kumar</strong></p>
+                  <p style={{ color: '#666', fontSize: '0.85rem' }}>📱 +91 98765 43212</p>
+                  <p style={{ color: '#666', fontSize: '0.85rem' }}>🏠 Wants to sell property in Camp</p>
+                  <p style={{ color: '#666', fontSize: '0.75rem' }}>2 days ago</p>
+                </div>
+              </div>
+              <button onClick={() => setShowSalesEnquiry(false)} style={{ width: '100%', marginTop: '20px', padding: '10px', background: '#f0f0f0', border: 'none', borderRadius: '6px', cursor: 'pointer' }}>Close</button>
+            </div>
+          </div>
+        )}
 
         {/* Property Valuation Modal */}
         {showValuation && (

@@ -16,8 +16,16 @@ function AdminDashboard({ user }) {
   const [showAddProperty, setShowAddProperty] = useState(false);
   const [editingProperty, setEditingProperty] = useState(null);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(null);
+  
+  // Lead Management States
+  const [showAddLead, setShowAddLead] = useState(false);
+  const [editingLead, setEditingLead] = useState(null);
+  
+  // Agent Management States
+  const [showAddAgent, setShowAddAgent] = useState(false);
+  const [editingAgent, setEditingAgent] = useState(null);
 
-  const API_URL = 'https://belgaum-homes-2.onrender.com';
+  const API_URL = 'http://localhost:10000';
 
   // Fetch all data
   useEffect(() => {
@@ -56,7 +64,146 @@ function AdminDashboard({ user }) {
     }
   };
 
-  // Handle Add/Update Property
+  // ==================== LEAD MANAGEMENT ====================
+  
+  const handleLeadSubmit = async (e) => {
+    e.preventDefault();
+    const form = e.target;
+    const leadData = {
+      name: form.name.value,
+      email: form.email.value,
+      phone: form.phone.value,
+      message: form.message.value,
+      propertyTitle: form.propertyTitle.value || 'General Inquiry',
+      status: form.status.value || 'new'
+    };
+
+    try {
+      const token = localStorage.getItem('token');
+      const url = editingLead 
+        ? `${API_URL}/api/leads/${editingLead._id}`
+        : `${API_URL}/api/leads`;
+      const method = editingLead ? 'PUT' : 'POST';
+
+      const response = await fetch(url, {
+        method,
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify(leadData)
+      });
+
+      if (response.ok) {
+        alert(editingLead ? '✅ Lead updated!' : '✅ Lead added!');
+        setShowAddLead(false);
+        setEditingLead(null);
+        fetchAllData();
+      } else {
+        alert('❌ Failed to save lead');
+      }
+    } catch (error) {
+      console.error('Error:', error);
+      alert('❌ Error saving lead');
+    }
+  };
+
+  const handleDeleteLead = async (id) => {
+    if (!window.confirm('Are you sure you want to delete this lead?')) return;
+
+    try {
+      const token = localStorage.getItem('token');
+      const response = await fetch(`${API_URL}/api/leads/${id}`, {
+        method: 'DELETE',
+        headers: { 'Authorization': `Bearer ${token}` }
+      });
+
+      if (response.ok) {
+        alert('✅ Lead deleted!');
+        fetchAllData();
+      } else {
+        alert('❌ Failed to delete lead');
+      }
+    } catch (error) {
+      console.error('Error:', error);
+      alert('❌ Error deleting lead');
+    }
+  };
+
+  // ==================== AGENT MANAGEMENT ====================
+  
+  const handleAgentSubmit = async (e) => {
+    e.preventDefault();
+    const form = e.target;
+    const agentData = {
+      name: form.name.value,
+      experience: form.experience.value,
+      rating: parseFloat(form.rating.value),
+      propertiesSold: parseInt(form.propertiesSold.value),
+      phone: form.phone.value,
+      email: form.email.value,
+      location: form.location.value,
+      verified: form.verified.checked,
+      specialties: form.specialties.value.split(',').map(s => s.trim()),
+      languages: form.languages.value.split(',').map(l => l.trim()),
+      about: form.about.value,
+      image: '👔'
+    };
+
+    try {
+      const token = localStorage.getItem('token');
+      const url = editingAgent 
+        ? `${API_URL}/api/agents/${editingAgent._id}`
+        : `${API_URL}/api/agents`;
+      const method = editingAgent ? 'PUT' : 'POST';
+
+      const response = await fetch(url, {
+        method,
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify(agentData)
+      });
+
+      if (response.ok) {
+        alert(editingAgent ? '✅ Agent updated!' : '✅ Agent added!');
+        setShowAddAgent(false);
+        setEditingAgent(null);
+        fetchAllData();
+      } else {
+        alert('❌ Failed to save agent');
+      }
+    } catch (error) {
+      console.error('Error:', error);
+      alert('❌ Error saving agent');
+    }
+  };
+
+  const handleDeleteAgent = async (id) => {
+    if (!window.confirm('Are you sure you want to delete this agent?')) return;
+
+    try {
+      const token = localStorage.getItem('token');
+      const response = await fetch(`${API_URL}/api/agents/${id}`, {
+        method: 'DELETE',
+        headers: { 'Authorization': `Bearer ${token}` }
+      });
+
+      if (response.ok) {
+        alert('✅ Agent deleted!');
+        fetchAllData();
+      } else {
+        alert('❌ Failed to delete agent');
+      }
+    } catch (error) {
+      console.error('Error:', error);
+      alert('❌ Error deleting agent');
+    }
+  };
+
+  // ==================== PROPERTY MANAGEMENT ====================
+  
   const handlePropertySubmit = async (e) => {
     e.preventDefault();
     const form = e.target;
@@ -109,7 +256,6 @@ function AdminDashboard({ user }) {
     }
   };
 
-  // Handle Delete Property
   const handleDeleteProperty = async (id) => {
     if (!window.confirm('Are you sure you want to delete this property?')) return;
 
@@ -130,27 +276,6 @@ function AdminDashboard({ user }) {
     } catch (error) {
       console.error('Error:', error);
       alert('❌ Error deleting property');
-    }
-  };
-
-  // Handle Lead Status Update
-  const updateLeadStatus = async (id, status) => {
-    try {
-      const token = localStorage.getItem('token');
-      const response = await fetch(`${API_URL}/api/leads/${id}`, {
-        method: 'PUT',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`
-        },
-        body: JSON.stringify({ status })
-      });
-
-      if (response.ok) {
-        fetchAllData();
-      }
-    } catch (error) {
-      console.error('Error updating lead:', error);
     }
   };
 
@@ -188,17 +313,31 @@ function AdminDashboard({ user }) {
     <div style={{ padding: '30px 0', background: '#f5f7fb', minHeight: '100vh' }}>
       <div style={{ maxWidth: '1400px', margin: '0 auto', padding: '0 20px' }}>
         {/* Header */}
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '30px' }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '30px', flexWrap: 'wrap', gap: '10px' }}>
           <div>
             <h1 style={{ fontSize: '2rem', marginBottom: '5px' }}>🛠️ Admin Dashboard</h1>
             <p style={{ color: '#666' }}>Manage your Belgaum Homes platform</p>
           </div>
-          <button
-            onClick={() => { setShowAddProperty(true); setEditingProperty(null); }}
-            style={{ padding: '12px 24px', background: '#E31B23', color: 'white', border: 'none', borderRadius: '8px', cursor: 'pointer', fontWeight: 'bold' }}
-          >
-            ➕ Add Property
-          </button>
+          <div style={{ display: 'flex', gap: '10px', flexWrap: 'wrap' }}>
+            <button
+              onClick={() => { setShowAddProperty(true); setEditingProperty(null); }}
+              style={{ padding: '10px 20px', background: '#E31B23', color: 'white', border: 'none', borderRadius: '8px', cursor: 'pointer', fontWeight: 'bold' }}
+            >
+              ➕ Add Property
+            </button>
+            <button
+              onClick={() => { setShowAddLead(true); setEditingLead(null); }}
+              style={{ padding: '10px 20px', background: '#4caf50', color: 'white', border: 'none', borderRadius: '8px', cursor: 'pointer', fontWeight: 'bold' }}
+            >
+              📞 Add Lead
+            </button>
+            <button
+              onClick={() => { setShowAddAgent(true); setEditingAgent(null); }}
+              style={{ padding: '10px 20px', background: '#2196f3', color: 'white', border: 'none', borderRadius: '8px', cursor: 'pointer', fontWeight: 'bold' }}
+            >
+              👔 Add Agent
+            </button>
+          </div>
         </div>
 
         {/* Stats Cards */}
@@ -253,7 +392,6 @@ function AdminDashboard({ user }) {
         {/* ========== OVERVIEW TAB ========== */}
         {activeTab === 'overview' && (
           <div>
-            {/* Charts */}
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(400px, 1fr))', gap: '25px' }}>
               <div style={{ background: 'white', padding: '20px', borderRadius: '12px', boxShadow: '0 2px 8px rgba(0,0,0,0.05)' }}>
                 <h3 style={{ marginBottom: '15px' }}>📊 Monthly Activity</h3>
@@ -380,15 +518,14 @@ function AdminDashboard({ user }) {
                       </td>
                       <td style={{ padding: '12px' }}>{new Date(lead.createdAt).toLocaleDateString()}</td>
                       <td style={{ padding: '12px', textAlign: 'center' }}>
-                        <select
-                          value={lead.status || 'new'}
-                          onChange={(e) => updateLeadStatus(lead._id, e.target.value)}
-                          style={{ padding: '4px 8px', border: '1px solid #ddd', borderRadius: '4px' }}
-                        >
-                          <option value="new">New</option>
-                          <option value="contacted">Contacted</option>
-                          <option value="closed">Closed</option>
-                        </select>
+                        <button
+                          onClick={() => { setEditingLead(lead); setShowAddLead(true); }}
+                          style={{ padding: '4px 8px', background: '#2196f3', color: 'white', border: 'none', borderRadius: '4px', cursor: 'pointer', marginRight: '5px' }}
+                        >✏️</button>
+                        <button
+                          onClick={() => handleDeleteLead(lead._id)}
+                          style={{ padding: '4px 8px', background: '#f44336', color: 'white', border: 'none', borderRadius: '4px', cursor: 'pointer' }}
+                        >🗑️</button>
                       </td>
                     </tr>
                   ))}
@@ -464,15 +601,72 @@ function AdminDashboard({ user }) {
                       <td style={{ padding: '12px' }}>{agent.verified ? '✅ Yes' : '❌ No'}</td>
                       <td style={{ padding: '12px', textAlign: 'center' }}>
                         <button
-                          style={{ padding: '6px 12px', background: '#2196f3', color: 'white', border: 'none', borderRadius: '4px', cursor: 'pointer' }}
-                          onClick={() => alert(`Contact: ${agent.phone}\nEmail: ${agent.email}`)}
-                        >📞 View</button>
+                          onClick={() => { setEditingAgent(agent); setShowAddAgent(true); }}
+                          style={{ padding: '4px 8px', background: '#2196f3', color: 'white', border: 'none', borderRadius: '4px', cursor: 'pointer', marginRight: '5px' }}
+                        >✏️</button>
+                        <button
+                          onClick={() => handleDeleteAgent(agent._id)}
+                          style={{ padding: '4px 8px', background: '#f44336', color: 'white', border: 'none', borderRadius: '4px', cursor: 'pointer' }}
+                        >🗑️</button>
                       </td>
                     </tr>
                   ))}
                 </tbody>
               </table>
               {agents.length === 0 && <p style={{ textAlign: 'center', padding: '20px', color: '#666' }}>No agents found</p>}
+            </div>
+          </div>
+        )}
+
+        {/* ========== ADD/EDIT LEAD MODAL ========== */}
+        {showAddLead && (
+          <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, background: 'rgba(0,0,0,0.7)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 2000, padding: '20px' }}
+            onClick={() => { setShowAddLead(false); setEditingLead(null); }}>
+            <div style={{ background: 'white', borderRadius: '16px', padding: '30px', maxWidth: '500px', width: '100%' }}
+              onClick={(e) => e.stopPropagation()}>
+              <h2 style={{ marginBottom: '20px' }}>{editingLead ? '✏️ Edit Lead' : '📞 Add New Lead'}</h2>
+              <form onSubmit={handleLeadSubmit}>
+                <input type="text" name="name" placeholder="Name *" required defaultValue={editingLead?.name || ''} style={{ width: '100%', padding: '10px', marginBottom: '10px', border: '1px solid #ddd', borderRadius: '6px' }} />
+                <input type="email" name="email" placeholder="Email *" required defaultValue={editingLead?.email || ''} style={{ width: '100%', padding: '10px', marginBottom: '10px', border: '1px solid #ddd', borderRadius: '6px' }} />
+                <input type="tel" name="phone" placeholder="Phone *" required defaultValue={editingLead?.phone || ''} style={{ width: '100%', padding: '10px', marginBottom: '10px', border: '1px solid #ddd', borderRadius: '6px' }} />
+                <input type="text" name="propertyTitle" placeholder="Property Title (optional)" defaultValue={editingLead?.propertyTitle || ''} style={{ width: '100%', padding: '10px', marginBottom: '10px', border: '1px solid #ddd', borderRadius: '6px' }} />
+                <textarea name="message" placeholder="Message" rows="3" defaultValue={editingLead?.message || ''} style={{ width: '100%', padding: '10px', marginBottom: '10px', border: '1px solid #ddd', borderRadius: '6px' }} />
+                <select name="status" defaultValue={editingLead?.status || 'new'} style={{ width: '100%', padding: '10px', marginBottom: '10px', border: '1px solid #ddd', borderRadius: '6px' }}>
+                  <option value="new">New</option>
+                  <option value="contacted">Contacted</option>
+                  <option value="closed">Closed</option>
+                </select>
+                <button type="submit" style={{ width: '100%', padding: '12px', background: '#4caf50', color: 'white', border: 'none', borderRadius: '6px', cursor: 'pointer', fontWeight: 'bold' }}>{editingLead ? '✏️ Update Lead' : '➕ Add Lead'}</button>
+                <button type="button" onClick={() => { setShowAddLead(false); setEditingLead(null); }} style={{ width: '100%', marginTop: '10px', padding: '10px', background: '#f0f0f0', border: 'none', borderRadius: '6px', cursor: 'pointer' }}>Cancel</button>
+              </form>
+            </div>
+          </div>
+        )}
+
+        {/* ========== ADD/EDIT AGENT MODAL ========== */}
+        {showAddAgent && (
+          <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, background: 'rgba(0,0,0,0.7)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 2000, padding: '20px' }}
+            onClick={() => { setShowAddAgent(false); setEditingAgent(null); }}>
+            <div style={{ background: 'white', borderRadius: '16px', padding: '30px', maxWidth: '500px', width: '100%' }}
+              onClick={(e) => e.stopPropagation()}>
+              <h2 style={{ marginBottom: '20px' }}>{editingAgent ? '✏️ Edit Agent' : '👔 Add New Agent'}</h2>
+              <form onSubmit={handleAgentSubmit}>
+                <input type="text" name="name" placeholder="Agent Name *" required defaultValue={editingAgent?.name || ''} style={{ width: '100%', padding: '10px', marginBottom: '10px', border: '1px solid #ddd', borderRadius: '6px' }} />
+                <input type="text" name="experience" placeholder="Experience (e.g., 10+ years)" required defaultValue={editingAgent?.experience || ''} style={{ width: '100%', padding: '10px', marginBottom: '10px', border: '1px solid #ddd', borderRadius: '6px' }} />
+                <input type="number" step="0.1" name="rating" placeholder="Rating (e.g., 4.5)" required defaultValue={editingAgent?.rating || ''} style={{ width: '100%', padding: '10px', marginBottom: '10px', border: '1px solid #ddd', borderRadius: '6px' }} />
+                <input type="number" name="propertiesSold" placeholder="Properties Sold" required defaultValue={editingAgent?.propertiesSold || ''} style={{ width: '100%', padding: '10px', marginBottom: '10px', border: '1px solid #ddd', borderRadius: '6px' }} />
+                <input type="tel" name="phone" placeholder="Phone" required defaultValue={editingAgent?.phone || ''} style={{ width: '100%', padding: '10px', marginBottom: '10px', border: '1px solid #ddd', borderRadius: '6px' }} />
+                <input type="email" name="email" placeholder="Email" required defaultValue={editingAgent?.email || ''} style={{ width: '100%', padding: '10px', marginBottom: '10px', border: '1px solid #ddd', borderRadius: '6px' }} />
+                <input type="text" name="location" placeholder="Location (e.g., Shahapur, Belgaum)" required defaultValue={editingAgent?.location || ''} style={{ width: '100%', padding: '10px', marginBottom: '10px', border: '1px solid #ddd', borderRadius: '6px' }} />
+                <input type="text" name="specialties" placeholder="Specialties (comma separated)" defaultValue={editingAgent?.specialties?.join(', ') || ''} style={{ width: '100%', padding: '10px', marginBottom: '10px', border: '1px solid #ddd', borderRadius: '6px' }} />
+                <input type="text" name="languages" placeholder="Languages (comma separated)" defaultValue={editingAgent?.languages?.join(', ') || ''} style={{ width: '100%', padding: '10px', marginBottom: '10px', border: '1px solid #ddd', borderRadius: '6px' }} />
+                <textarea name="about" placeholder="About the agent" rows="3" defaultValue={editingAgent?.about || ''} style={{ width: '100%', padding: '10px', marginBottom: '10px', border: '1px solid #ddd', borderRadius: '6px' }} />
+                <label style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '10px' }}>
+                  <input type="checkbox" name="verified" defaultChecked={editingAgent?.verified !== undefined ? editingAgent.verified : true} /> Verified Agent
+                </label>
+                <button type="submit" style={{ width: '100%', padding: '12px', background: '#2196f3', color: 'white', border: 'none', borderRadius: '6px', cursor: 'pointer', fontWeight: 'bold' }}>{editingAgent ? '✏️ Update Agent' : '➕ Add Agent'}</button>
+                <button type="button" onClick={() => { setShowAddAgent(false); setEditingAgent(null); }} style={{ width: '100%', marginTop: '10px', padding: '10px', background: '#f0f0f0', border: 'none', borderRadius: '6px', cursor: 'pointer' }}>Cancel</button>
+              </form>
             </div>
           </div>
         )}

@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { Link } from 'react-router-dom';
 
 function BuyPage() {
   const [properties, setProperties] = useState([]);
@@ -24,7 +25,8 @@ function BuyPage() {
 
   const filteredProperties = properties.filter(prop => {
     const matchesSearch = prop.title?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                          prop.location?.toLowerCase().includes(searchTerm.toLowerCase());
+                          prop.location?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                          prop.area?.toLowerCase().includes(searchTerm.toLowerCase());
     let matchesPrice = true;
     if (priceFilter !== 'all') {
       const priceNum = parseInt(prop.price?.replace(/[^0-9]/g, '') || 0);
@@ -71,19 +73,22 @@ function BuyPage() {
         {/* Property Grid */}
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(320px, 1fr))', gap: '25px' }}>
           {filteredProperties.map(property => (
-            <div key={property._id} style={{ background: 'white', borderRadius: '12px', overflow: 'hidden', boxShadow: '0 2px 8px rgba(0,0,0,0.1)' }}>
-              <img src={property.images?.[0] || 'https://placehold.co/600x400/eee/ccc?text=Property'} alt={property.title} style={{ width: '100%', height: '200px', objectFit: 'cover' }} />
-              <div style={{ padding: '15px' }}>
-                <h3 style={{ fontSize: '1rem', marginBottom: '5px' }}>{property.title}</h3>
-                <div style={{ fontSize: '1.2rem', fontWeight: 'bold', color: '#E31B23' }}>{property.price}</div>
-                <div style={{ color: '#666', fontSize: '0.8rem' }}>📍 {property.location}, {property.area}</div>
-                <div style={{ display: 'flex', gap: '10px', marginTop: '10px' }}>
-                  <span style={{ background: '#f0f0f0', padding: '4px 8px', borderRadius: '4px', fontSize: '0.7rem' }}>{property.bedrooms} BHK</span>
-                  <span style={{ background: '#f0f0f0', padding: '4px 8px', borderRadius: '4px', fontSize: '0.7rem' }}>{property.size}</span>
+            <Link key={property._id} to={`/property/${property._id}`} style={{ textDecoration: 'none', color: 'inherit' }}>
+              <div style={{ background: 'white', borderRadius: '12px', overflow: 'hidden', boxShadow: '0 2px 8px rgba(0,0,0,0.1)', transition: 'transform 0.2s' }}
+                onMouseEnter={(e) => e.currentTarget.style.transform = 'translateY(-5px)'}
+                onMouseLeave={(e) => e.currentTarget.style.transform = 'translateY(0)'}>
+                <img src={property.images?.[0] || 'https://placehold.co/600x400/eee/ccc?text=Property'} alt={property.title} style={{ width: '100%', height: '200px', objectFit: 'cover' }} />
+                <div style={{ padding: '15px' }}>
+                  <h3 style={{ fontSize: '1rem', marginBottom: '5px' }}>{property.title}</h3>
+                  <div style={{ fontSize: '1.2rem', fontWeight: 'bold', color: '#E31B23' }}>{property.price}</div>
+                  <div style={{ color: '#666', fontSize: '0.8rem' }}>📍 {property.location}, {property.area}</div>
+                  <div style={{ display: 'flex', gap: '10px', marginTop: '10px' }}>
+                    <span style={{ background: '#f0f0f0', padding: '4px 8px', borderRadius: '4px', fontSize: '0.7rem' }}>{property.bedrooms} BHK</span>
+                    <span style={{ background: '#f0f0f0', padding: '4px 8px', borderRadius: '4px', fontSize: '0.7rem' }}>{property.size}</span>
+                  </div>
                 </div>
-                <button style={{ width: '100%', marginTop: '12px', padding: '8px', background: '#E31B23', color: 'white', border: 'none', borderRadius: '6px', cursor: 'pointer' }}>View Details</button>
               </div>
-            </div>
+            </Link>
           ))}
         </div>
       </div>

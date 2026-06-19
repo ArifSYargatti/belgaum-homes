@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { Link } from 'react-router-dom';
 
 function HomePage() {
   const [properties, setProperties] = useState([]);
@@ -10,7 +11,7 @@ function HomePage() {
   const [priceFilter, setPriceFilter] = useState('all');
   const [bhkFilter, setBhkFilter] = useState('all');
 
-  const API_URL = 'https://belgaum-homes-2.onrender.com';
+  const API_URL = 'http://localhost:10000';
 
   useEffect(() => {
     const fetchData = async () => {
@@ -33,6 +34,8 @@ function HomePage() {
         setNewLaunches(newData.data || []);
       } catch (error) {
         console.error('Error fetching data:', error);
+        // Fallback to sample data if backend fails
+        setProperties([]);
       } finally {
         setLoading(false);
       }
@@ -56,20 +59,23 @@ function HomePage() {
   });
 
   const PropertyCard = ({ property, showBadge = false, badgeText = '', badgeColor = '#E31B23' }) => (
-    <div style={{ minWidth: '320px', background: 'white', borderRadius: '12px', overflow: 'hidden', boxShadow: '0 2px 8px rgba(0,0,0,0.1)', cursor: 'pointer', transition: 'transform 0.2s' }}>
-      <img src={property.images?.[0] || 'https://placehold.co/600x400/eee/ccc?text=Property'} alt={property.title} style={{ width: '100%', height: '200px', objectFit: 'cover' }} />
-      <div style={{ padding: '15px' }}>
-        {showBadge && <div style={{ background: badgeColor, color: 'white', padding: '2px 10px', borderRadius: '20px', fontSize: '0.7rem', display: 'inline-block', marginBottom: '10px' }}>{badgeText}</div>}
-        <h3 style={{ fontSize: '1rem', marginBottom: '5px' }}>{property.title}</h3>
-        <div style={{ fontSize: '1.2rem', fontWeight: 'bold', color: '#E31B23' }}>{property.price}</div>
-        <div style={{ color: '#666', fontSize: '0.8rem' }}>📍 {property.location}, {property.area}</div>
-        <div style={{ display: 'flex', gap: '10px', marginTop: '10px' }}>
-          <span style={{ background: '#f0f0f0', padding: '4px 8px', borderRadius: '4px', fontSize: '0.7rem' }}>{property.bedrooms} BHK</span>
-          <span style={{ background: '#f0f0f0', padding: '4px 8px', borderRadius: '4px', fontSize: '0.7rem' }}>{property.size}</span>
+    <Link to={`/property/${property._id}`} style={{ textDecoration: 'none', color: 'inherit' }}>
+      <div style={{ minWidth: '320px', background: 'white', borderRadius: '12px', overflow: 'hidden', boxShadow: '0 2px 8px rgba(0,0,0,0.1)', cursor: 'pointer', transition: 'transform 0.2s' }}
+        onMouseEnter={(e) => e.currentTarget.style.transform = 'translateY(-5px)'}
+        onMouseLeave={(e) => e.currentTarget.style.transform = 'translateY(0)'}>
+        <img src={property.images?.[0] || 'https://placehold.co/600x400/eee/ccc?text=Property'} alt={property.title} style={{ width: '100%', height: '200px', objectFit: 'cover' }} />
+        <div style={{ padding: '15px' }}>
+          {showBadge && <div style={{ background: badgeColor, color: 'white', padding: '2px 10px', borderRadius: '20px', fontSize: '0.7rem', display: 'inline-block', marginBottom: '10px' }}>{badgeText}</div>}
+          <h3 style={{ fontSize: '1rem', marginBottom: '5px' }}>{property.title}</h3>
+          <div style={{ fontSize: '1.2rem', fontWeight: 'bold', color: '#E31B23' }}>{property.price}</div>
+          <div style={{ color: '#666', fontSize: '0.8rem' }}>📍 {property.location}, {property.area}</div>
+          <div style={{ display: 'flex', gap: '10px', marginTop: '10px' }}>
+            <span style={{ background: '#f0f0f0', padding: '4px 8px', borderRadius: '4px', fontSize: '0.7rem' }}>{property.bedrooms} BHK</span>
+            <span style={{ background: '#f0f0f0', padding: '4px 8px', borderRadius: '4px', fontSize: '0.7rem' }}>{property.size}</span>
+          </div>
         </div>
-        <button style={{ width: '100%', marginTop: '12px', padding: '8px', background: '#E31B23', color: 'white', border: 'none', borderRadius: '6px', cursor: 'pointer' }}>Inquire Now</button>
       </div>
-    </div>
+    </Link>
   );
 
   if (loading) return <div style={{ textAlign: 'center', padding: '50px', fontSize: '20px' }}>🏢 Loading Belgaum properties...</div>;
@@ -114,8 +120,25 @@ function HomePage() {
         <div style={{ maxWidth: '1400px', margin: '0 auto', padding: '0 20px' }}>
           <h2 style={{ fontSize: '1.8rem', marginBottom: '10px' }}>🏠 All Properties</h2>
           <p style={{ marginBottom: '20px', color: '#666' }}>Showing {filteredProperties.length} properties</p>
-          <div style={{ display: 'flex', overflowX: 'auto', gap: '20px', paddingBottom: '15px', scrollbarWidth: 'thin' }}>
-            {filteredProperties.map(property => <PropertyCard key={property._id} property={property} />)}
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(350px, 1fr))', gap: '25px' }}>
+            {filteredProperties.map(property => (
+              <Link key={property._id} to={`/property/${property._id}`} style={{ textDecoration: 'none', color: 'inherit' }}>
+                <div style={{ background: 'white', borderRadius: '12px', overflow: 'hidden', boxShadow: '0 2px 8px rgba(0,0,0,0.1)', transition: 'transform 0.2s' }}
+                  onMouseEnter={(e) => e.currentTarget.style.transform = 'translateY(-5px)'}
+                  onMouseLeave={(e) => e.currentTarget.style.transform = 'translateY(0)'}>
+                  <img src={property.images?.[0] || 'https://placehold.co/600x400/eee/ccc?text=Property'} alt={property.title} style={{ width: '100%', height: '200px', objectFit: 'cover' }} />
+                  <div style={{ padding: '15px' }}>
+                    <h3 style={{ fontSize: '1rem', marginBottom: '5px' }}>{property.title}</h3>
+                    <div style={{ fontSize: '1.2rem', fontWeight: 'bold', color: '#E31B23' }}>{property.price}</div>
+                    <div style={{ color: '#666', fontSize: '0.8rem' }}>📍 {property.location}, {property.area}</div>
+                    <div style={{ display: 'flex', gap: '10px', marginTop: '10px' }}>
+                      <span style={{ background: '#f0f0f0', padding: '4px 8px', borderRadius: '4px', fontSize: '0.7rem' }}>{property.bedrooms} BHK</span>
+                      <span style={{ background: '#f0f0f0', padding: '4px 8px', borderRadius: '4px', fontSize: '0.7rem' }}>{property.size}</span>
+                    </div>
+                  </div>
+                </div>
+              </Link>
+            ))}
           </div>
         </div>
       </div>

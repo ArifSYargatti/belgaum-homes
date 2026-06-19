@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { Link } from 'react-router-dom';
 
 function RentPage() {
   const [rentalProperties, setRentalProperties] = useState([]);
@@ -15,201 +16,11 @@ function RentPage() {
     fetch(`${API_URL}/api/properties`)
       .then(res => res.json())
       .then(data => {
-        // Filter for rental properties (in a real app, you'd have a 'rent' status)
-        // For now, we'll use some sample rental data
-        const rentalData = [
-          {
-            id: 1,
-            title: "2BHK Flat in Shahapur",
-            price: "₹15,000/mo",
-            size: "1100 sq ft",
-            bedrooms: 2,
-            bathrooms: 2,
-            area: "Shahapur",
-            location: "Near City Center",
-            images: ["https://placehold.co/600x400/ff6b35/white?text=Rental+Property"],
-            propertyType: "Flat",
-            furnishing: "Fully Furnished",
-            availability: "Immediately Available",
-            isVerified: true,
-            isOwnerProperty: true,
-            isBachelorFriendly: true,
-            description: "Spacious 2BHK flat in prime Shahapur location. Fully furnished with modern amenities.",
-            amenities: ["Parking", "Security", "Lift", "Power Backup"]
-          },
-          {
-            id: 2,
-            title: "3BHK House in Tilakwadi",
-            price: "₹22,000/mo",
-            size: "1500 sq ft",
-            bedrooms: 3,
-            bathrooms: 2,
-            area: "Tilakwadi",
-            location: "Near Tilakwadi Market",
-            images: ["https://placehold.co/600x400/4caf50/white?text=House+for+Rent"],
-            propertyType: "House",
-            furnishing: "Semi-Furnished",
-            availability: "Available in 15 Days",
-            isVerified: true,
-            isOwnerProperty: false,
-            isBachelorFriendly: false,
-            description: "Beautiful independent house in peaceful Tilakwadi. Perfect for families.",
-            amenities: ["Parking", "Security", "Garden", "24x7 Water"]
-          },
-          {
-            id: 3,
-            title: "1BHK Flat for Bachelors - Camp",
-            price: "₹9,000/mo",
-            size: "650 sq ft",
-            bedrooms: 1,
-            bathrooms: 1,
-            area: "Camp",
-            location: "Near Military Hospital",
-            images: ["https://placehold.co/600x400/2196f3/white?text=Bachelor+Flat"],
-            propertyType: "Flat",
-            furnishing: "Fully Furnished",
-            availability: "Immediately Available",
-            isVerified: true,
-            isOwnerProperty: true,
-            isBachelorFriendly: true,
-            description: "Perfect for bachelors. Fully furnished flat in Camp area.",
-            amenities: ["Parking", "Security", "Water Supply"]
-          },
-          {
-            id: 4,
-            title: "Villa for Rent - RPD Cross",
-            price: "₹45,000/mo",
-            size: "2200 sq ft",
-            bedrooms: 4,
-            bathrooms: 3,
-            area: "RPD Cross",
-            location: "Near RPD College",
-            images: ["https://placehold.co/600x400/9c27b0/white?text=Villa+Rent"],
-            propertyType: "Villa",
-            furnishing: "Fully Furnished",
-            availability: "Immediately Available",
-            isVerified: true,
-            isOwnerProperty: false,
-            isBachelorFriendly: false,
-            description: "Luxury villa with pool and garden. Perfect for large families.",
-            amenities: ["Swimming Pool", "Gym", "Garden", "Club House", "Security"]
-          },
-          {
-            id: 5,
-            title: "PG in Gogte Chowk",
-            price: "₹6,000/mo",
-            size: "300 sq ft",
-            bedrooms: 1,
-            bathrooms: 1,
-            area: "Gogte Chowk",
-            location: "Near Gogte College",
-            images: ["https://placehold.co/600x400/ff9800/white?text=PG+Accommodation"],
-            propertyType: "PG",
-            furnishing: "Fully Furnished",
-            availability: "Immediately Available",
-            isVerified: true,
-            isOwnerProperty: false,
-            isBachelorFriendly: true,
-            description: "Comfortable PG accommodation for students and bachelors.",
-            amenities: ["Food Included", "WiFi", "Security", "Laundry"]
-          },
-          {
-            id: 6,
-            title: "Office Space - Camp Area",
-            price: "₹35,000/mo",
-            size: "800 sq ft",
-            bedrooms: 0,
-            bathrooms: 2,
-            area: "Camp",
-            location: "Near Clock Tower",
-            images: ["https://placehold.co/600x400/00bcd4/white?text=Office+Space"],
-            propertyType: "Office Space",
-            furnishing: "Semi-Furnished",
-            availability: "Available Now",
-            isVerified: true,
-            isOwnerProperty: true,
-            isBachelorFriendly: false,
-            description: "Prime office space in Camp area. Excellent for businesses.",
-            amenities: ["Parking", "Security", "Intercom", "Power Backup"]
-          },
-          {
-            id: 7,
-            title: "Commercial Space - Shahapur",
-            price: "₹50,000/mo",
-            size: "1200 sq ft",
-            bedrooms: 0,
-            bathrooms: 2,
-            area: "Shahapur",
-            location: "Near City Center Mall",
-            images: ["https://placehold.co/600x400/e91e63/white?text=Commercial+Space"],
-            propertyType: "Commercial Space",
-            furnishing: "Semi-Furnished",
-            availability: "Available Now",
-            isVerified: true,
-            isOwnerProperty: false,
-            isBachelorFriendly: false,
-            description: "High visibility commercial space in prime Shahapur location.",
-            amenities: ["Parking", "Security", "Maintenance"]
-          },
-          {
-            id: 8,
-            title: "Student Hostel - Near KLE University",
-            price: "₹5,000/mo",
-            size: "250 sq ft",
-            bedrooms: 1,
-            bathrooms: 1,
-            area: "Gogte Chowk",
-            location: "Near KLE University",
-            images: ["https://placehold.co/600x400/8bc34a/white?text=Student+Hostel"],
-            propertyType: "Student Hostel",
-            furnishing: "Fully Furnished",
-            availability: "Immediately Available",
-            isVerified: true,
-            isOwnerProperty: true,
-            isBachelorFriendly: true,
-            description: "Comfortable student hostel near KLE University.",
-            amenities: ["Food Included", "WiFi", "Study Room", "Security"]
-          },
-          {
-            id: 9,
-            title: "Bachelor Friendly 1BHK - Vadagaon",
-            price: "₹8,500/mo",
-            size: "600 sq ft",
-            bedrooms: 1,
-            bathrooms: 1,
-            area: "Vadagaon",
-            location: "Near Bus Stand",
-            images: ["https://placehold.co/600x400/3f51b5/white?text=Bachelor+Flat"],
-            propertyType: "Flat",
-            furnishing: "Fully Furnished",
-            availability: "Immediately Available",
-            isVerified: false,
-            isOwnerProperty: true,
-            isBachelorFriendly: true,
-            description: "Bachelor-friendly flat with all amenities.",
-            amenities: ["Parking", "Security", "Water Supply"]
-          },
-          {
-            id: 10,
-            title: "Furnished Home - Sambhaji Nagar",
-            price: "₹18,000/mo",
-            size: "1200 sq ft",
-            bedrooms: 2,
-            bathrooms: 2,
-            area: "Sambhaji Nagar",
-            location: "Near Garden",
-            images: ["https://placehold.co/600x400/9c27b0/white?text=Furnished+Home"],
-            propertyType: "House",
-            furnishing: "Fully Furnished",
-            availability: "Available in 1 Month",
-            isVerified: true,
-            isOwnerProperty: false,
-            isBachelorFriendly: false,
-            description: "Beautifully furnished home with garden view.",
-            amenities: ["Garden", "Parking", "Security", "24x7 Water"]
-          }
-        ];
-        setRentalProperties(rentalData);
+        const allProperties = data.data || [];
+        // For rent, we can filter properties that have 'rent' status
+        // or show all properties with a rent flag
+        // For now, we'll show all properties as rental options
+        setRentalProperties(allProperties);
         setLoading(false);
       })
       .catch(err => {
@@ -242,7 +53,7 @@ function RentPage() {
     // Budget filter
     let matchesBudget = true;
     if (selectedBudget !== 'all') {
-      const priceMatch = prop.price.match(/[\d,]+/);
+      const priceMatch = prop.price?.match(/[\d,]+/);
       if (priceMatch) {
         const priceNum = parseInt(priceMatch[0].replace(/,/g, ''));
         if (selectedBudget === 'under-10k') matchesBudget = priceNum < 10000;
@@ -295,102 +106,107 @@ function RentPage() {
   ];
 
   const PropertyCard = ({ property }) => (
-    <div style={{
-      background: 'white',
-      borderRadius: '12px',
-      overflow: 'hidden',
-      boxShadow: '0 2px 8px rgba(0,0,0,0.1)',
-      transition: 'transform 0.3s',
-      cursor: 'pointer'
-    }}
-    onMouseEnter={(e) => e.currentTarget.style.transform = 'translateY(-5px)'}
-    onMouseLeave={(e) => e.currentTarget.style.transform = 'translateY(0)'}
-    >
-      <div style={{ position: 'relative' }}>
-        <img
-          src={property.images?.[0] || 'https://placehold.co/600x400/eee/ccc?text=Property'}
-          alt={property.title}
-          style={{ width: '100%', height: '200px', objectFit: 'cover' }}
-        />
-        {property.isVerified && (
-          <span style={{
-            position: 'absolute',
-            top: '10px',
-            left: '10px',
-            background: '#4caf50',
-            color: 'white',
-            padding: '4px 10px',
-            borderRadius: '20px',
-            fontSize: '0.7rem',
-            fontWeight: 'bold'
-          }}>
-            ✅ Verified
-          </span>
-        )}
-        {property.isOwnerProperty && (
-          <span style={{
-            position: 'absolute',
-            top: '40px',
-            left: '10px',
-            background: '#2196f3',
-            color: 'white',
-            padding: '4px 10px',
-            borderRadius: '20px',
-            fontSize: '0.7rem',
-            fontWeight: 'bold'
-          }}>
-            👤 Owner
-          </span>
-        )}
-        {property.isBachelorFriendly && (
-          <span style={{
-            position: 'absolute',
-            top: '70px',
-            left: '10px',
-            background: '#ff9800',
-            color: 'white',
-            padding: '4px 10px',
-            borderRadius: '20px',
-            fontSize: '0.7rem',
-            fontWeight: 'bold'
-          }}>
-            🎓 Bachelor Friendly
-          </span>
-        )}
-        {property.availability?.includes('Immediately') && (
-          <span style={{
-            position: 'absolute',
-            top: '10px',
-            right: '10px',
-            background: '#f44336',
-            color: 'white',
-            padding: '4px 10px',
-            borderRadius: '20px',
-            fontSize: '0.7rem',
-            fontWeight: 'bold'
-          }}>
-            🚀 Available Now
-          </span>
-        )}
-      </div>
-      <div style={{ padding: '15px' }}>
-        <h3 style={{ fontSize: '1rem', marginBottom: '5px' }}>{property.title}</h3>
-        <div style={{ fontSize: '1.2rem', fontWeight: 'bold', color: '#E31B23' }}>{property.price}</div>
-        <div style={{ color: '#666', fontSize: '0.8rem' }}>📍 {property.location}, {property.area}</div>
-        <div style={{ display: 'flex', gap: '10px', marginTop: '10px' }}>
-          {property.bedrooms > 0 && <span style={{ background: '#f0f0f0', padding: '4px 8px', borderRadius: '4px', fontSize: '0.7rem' }}>{property.bedrooms} BHK</span>}
-          <span style={{ background: '#f0f0f0', padding: '4px 8px', borderRadius: '4px', fontSize: '0.7rem' }}>{property.size}</span>
-          <span style={{ background: '#f0f0f0', padding: '4px 8px', borderRadius: '4px', fontSize: '0.7rem' }}>{property.furnishing}</span>
+    <Link to={`/property/${property._id}`} style={{ textDecoration: 'none', color: 'inherit' }}>
+      <div style={{
+        background: 'white',
+        borderRadius: '12px',
+        overflow: 'hidden',
+        boxShadow: '0 2px 8px rgba(0,0,0,0.1)',
+        transition: 'transform 0.3s',
+        cursor: 'pointer'
+      }}
+      onMouseEnter={(e) => e.currentTarget.style.transform = 'translateY(-5px)'}
+      onMouseLeave={(e) => e.currentTarget.style.transform = 'translateY(0)'}
+      >
+        <div style={{ position: 'relative' }}>
+          <img
+            src={property.images?.[0] || 'https://placehold.co/600x400/eee/ccc?text=Property'}
+            alt={property.title}
+            style={{ width: '100%', height: '200px', objectFit: 'cover' }}
+          />
+          {property.isVerified && (
+            <span style={{
+              position: 'absolute',
+              top: '10px',
+              left: '10px',
+              background: '#4caf50',
+              color: 'white',
+              padding: '4px 10px',
+              borderRadius: '20px',
+              fontSize: '0.7rem',
+              fontWeight: 'bold'
+            }}>
+              ✅ Verified
+            </span>
+          )}
+          {property.isOwnerProperty && (
+            <span style={{
+              position: 'absolute',
+              top: '40px',
+              left: '10px',
+              background: '#2196f3',
+              color: 'white',
+              padding: '4px 10px',
+              borderRadius: '20px',
+              fontSize: '0.7rem',
+              fontWeight: 'bold'
+            }}>
+              👤 Owner
+            </span>
+          )}
+          {property.isBachelorFriendly && (
+            <span style={{
+              position: 'absolute',
+              top: '70px',
+              left: '10px',
+              background: '#ff9800',
+              color: 'white',
+              padding: '4px 10px',
+              borderRadius: '20px',
+              fontSize: '0.7rem',
+              fontWeight: 'bold'
+            }}>
+              🎓 Bachelor Friendly
+            </span>
+          )}
+          {property.availability?.includes('Immediately') && (
+            <span style={{
+              position: 'absolute',
+              top: '10px',
+              right: '10px',
+              background: '#f44336',
+              color: 'white',
+              padding: '4px 10px',
+              borderRadius: '20px',
+              fontSize: '0.7rem',
+              fontWeight: 'bold'
+            }}>
+              🚀 Available Now
+            </span>
+          )}
         </div>
-        <div style={{ marginTop: '10px', fontSize: '0.8rem', color: '#666' }}>{property.description}</div>
-        <button
-          onClick={() => alert(`📞 Contact owner for ${property.title}\n\nWe will connect you with the property owner/agent.`)}
-          style={{ width: '100%', marginTop: '12px', padding: '8px', background: '#E31B23', color: 'white', border: 'none', borderRadius: '6px', cursor: 'pointer', fontWeight: 'bold' }}
-        >
-          📞 Contact Owner
-        </button>
+        <div style={{ padding: '15px' }}>
+          <h3 style={{ fontSize: '1rem', marginBottom: '5px' }}>{property.title}</h3>
+          <div style={{ fontSize: '1.2rem', fontWeight: 'bold', color: '#E31B23' }}>{property.price}</div>
+          <div style={{ color: '#666', fontSize: '0.8rem' }}>📍 {property.location}, {property.area}</div>
+          <div style={{ display: 'flex', gap: '10px', marginTop: '10px' }}>
+            {property.bedrooms > 0 && <span style={{ background: '#f0f0f0', padding: '4px 8px', borderRadius: '4px', fontSize: '0.7rem' }}>{property.bedrooms} BHK</span>}
+            <span style={{ background: '#f0f0f0', padding: '4px 8px', borderRadius: '4px', fontSize: '0.7rem' }}>{property.size}</span>
+            <span style={{ background: '#f0f0f0', padding: '4px 8px', borderRadius: '4px', fontSize: '0.7rem' }}>{property.furnishing || 'Standard'}</span>
+          </div>
+          <div style={{ marginTop: '10px', fontSize: '0.8rem', color: '#666' }}>{property.description}</div>
+          <button
+            onClick={(e) => {
+              e.preventDefault();
+              alert(`📞 Contact owner for ${property.title}\n\nWe will connect you with the property owner/agent.`);
+            }}
+            style={{ width: '100%', marginTop: '12px', padding: '8px', background: '#E31B23', color: 'white', border: 'none', borderRadius: '6px', cursor: 'pointer', fontWeight: 'bold' }}
+          >
+            📞 Contact Owner
+          </button>
+        </div>
       </div>
-    </div>
+    </Link>
   );
 
   if (loading) return <div style={{ textAlign: 'center', padding: '50px', fontSize: '20px' }}>🏠 Loading rental properties...</div>;
@@ -496,7 +312,7 @@ function RentPage() {
         {/* ===== PROPERTY GRID ===== */}
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(350px, 1fr))', gap: '25px', marginBottom: '40px' }}>
           {filteredProperties.map(property => (
-            <PropertyCard key={property.id} property={property} />
+            <PropertyCard key={property._id} property={property} />
           ))}
         </div>
 
