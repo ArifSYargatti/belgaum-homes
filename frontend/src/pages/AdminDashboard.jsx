@@ -25,7 +25,7 @@ function AdminDashboard({ user }) {
   const [showAddAgent, setShowAddAgent] = useState(false);
   const [editingAgent, setEditingAgent] = useState(null);
 
-  const API_URL = 'https://belgaum-homes-api.onrender.com';
+  const API_URL = 'https://belgaum-homes-2.onrender.com';
 
   // Fetch all data
   useEffect(() => {

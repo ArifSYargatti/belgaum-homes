@@ -10,7 +10,7 @@ function RentPage() {
   const [searchTerm, setSearchTerm] = useState('');
   const [showShareRequirement, setShowShareRequirement] = useState(false);
 
-  const API_URL = 'https://belgaum-homes-api.onrender.com';
+  const API_URL = 'https://belgaum-homes-2.onrender.com';
 
   useEffect(() => {
     fetch(`${API_URL}/api/properties`)
