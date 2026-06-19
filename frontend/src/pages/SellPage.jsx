@@ -12,79 +12,117 @@ function SellPage() {
   const [showSalesEnquiry, setShowSalesEnquiry] = useState(false);
   const [showValuation, setShowValuation] = useState(false);
   const [showRatesTrends, setShowRatesTrends] = useState(false);
+  const [posting, setPosting] = useState(false);
 
   const API_URL = 'https://belgaum-homes-2.onrender.com';
 
   // Fetch properties for selling
   useEffect(() => {
-    fetch(`${API_URL}/api/properties`)
-      .then(res => res.json())
-      .then(data => {
-        setProperties(data.data || []);
-        setLoading(false);
-      })
-      .catch(err => {
-        console.error('Error:', err);
-        setLoading(false);
-      });
+    fetchProperties();
   }, []);
+
+  const fetchProperties = async () => {
+    try {
+      const response = await fetch(`${API_URL}/api/properties`);
+      const data = await response.json();
+      setProperties(data.data || []);
+    } catch (err) {
+      console.error('Error fetching properties:', err);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   // ==================== POST PROPERTY ====================
   const handlePostProperty = async (e) => {
     e.preventDefault();
     const form = e.target;
     
+    // Check if user is logged in
+    const token = localStorage.getItem('token');
+    if (!token) {
+      alert('❌ Please login first to post a property.\n\nClick "Login" in the header and try again.');
+      return;
+    }
+    
+    // Get form values
+    const title = form.title.value.trim();
+    const price = form.price.value.trim();
+    const size = form.size.value.trim();
+    const location = form.location.value.trim();
+    const description = form.description.value.trim();
+    const propertyType = form.propertyType.value;
+    const bedrooms = parseInt(form.bedrooms.value) || 0;
+    const bathrooms = parseInt(form.bathrooms.value) || 0;
+    const amenities = form.amenities.value ? form.amenities.value.split(',').map(a => a.trim()).filter(a => a) : [];
+    const advantages = form.advantages.value ? form.advantages.value.split(',').map(a => a.trim()).filter(a => a) : [];
+    const yourName = form.yourName.value.trim();
+    const phone = form.phone.value.trim();
+
+    // Validate required fields
+    if (!title || !price || !size || !location || !description || !propertyType || !yourName || !phone) {
+      alert('❌ Please fill in all required fields (marked with *)');
+      return;
+    }
+
     const propertyData = {
-      title: form.title.value,
-      price: form.price.value,
-      priceValue: parseInt(form.price.value.replace(/[^0-9]/g, '')),
-      size: form.size.value,
-      bedrooms: parseInt(form.bedrooms.value) || 0,
-      bathrooms: parseInt(form.bathrooms.value) || 0,
-      area: form.location.value,
-      location: form.location.value,
-      description: form.description.value,
-      propertyType: form.propertyType.value,
-      advantages: form.advantages.value ? form.advantages.value.split(',').map(a => a.trim()) : [],
-      amenities: form.amenities.value ? form.amenities.value.split(',').map(a => a.trim()) : [],
-      images: ['https://placehold.co/600x400/eee/ccc?text=New+Property'],
+      title: title,
+      price: price,
+      priceValue: parseInt(price.replace(/[^0-9]/g, '')) || 0,
+      size: size,
+      bedrooms: bedrooms,
+      bathrooms: bathrooms,
+      area: location,
+      location: location,
+      description: description,
+      propertyType: propertyType,
+      advantages: advantages,
+      amenities: amenities,
+      images: ['https://placehold.co/600x400/4caf50/white?text=New+Listing'],
       premium: false,
       featured: false,
       isNewLaunch: false,
       isExclusive: false,
-      status: 'available'
+      status: 'available',
+      ownerName: yourName,
+      ownerPhone: phone
     };
 
+    setPosting(true);
+
     try {
-      const token = localStorage.getItem('token');
-      const headers = {
-        'Content-Type': 'application/json'
-      };
-      
-      if (token) {
-        headers['Authorization'] = `Bearer ${token}`;
-      }
-      
+      console.log('📤 Sending property data:', propertyData);
+      console.log('🔑 Token present:', token ? '✅ Yes' : '❌ No');
+
       const response = await fetch(`${API_URL}/api/properties`, {
         method: 'POST',
-        headers: headers,
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
         body: JSON.stringify(propertyData)
       });
 
       const data = await response.json();
+      console.log('📥 Server response:', data);
       
       if (data.success) {
         alert('✅ Your property has been listed successfully! It will appear on the website shortly.');
         setShowPostProperty(false);
         form.reset();
         // Refresh properties
-        window.location.reload();
+        setTimeout(() => {
+          fetchProperties();
+          window.location.reload();
+        }, 1000);
       } else {
         alert('❌ Failed to list property: ' + (data.error || 'Please try again'));
       }
     } catch (error) {
-      console.error('Error posting property:', error);
-      alert('❌ Error posting property. Please try again.');
+      console.error('❌ Error posting property:', error);
+      alert('❌ Error posting property. Please try again.\n\nError: ' + error.message);
+    } finally {
+      setPosting(false);
     }
   };
 
@@ -334,7 +372,9 @@ function SellPage() {
                 <input type="text" name="advantages" placeholder="Advantages (comma separated - Near school, Market)" style={{ width: '100%', padding: '10px', marginBottom: '12px', border: '1px solid #ddd', borderRadius: '6px' }} />
                 <input type="text" name="yourName" placeholder="Your Name *" required style={{ width: '100%', padding: '10px', marginBottom: '12px', border: '1px solid #ddd', borderRadius: '6px' }} />
                 <input type="tel" name="phone" placeholder="Phone Number *" required style={{ width: '100%', padding: '10px', marginBottom: '12px', border: '1px solid #ddd', borderRadius: '6px' }} />
-                <button type="submit" style={{ width: '100%', padding: '12px', background: '#4caf50', color: 'white', border: 'none', borderRadius: '6px', cursor: 'pointer', fontWeight: 'bold' }}>📤 Post Property FREE</button>
+                <button type="submit" disabled={posting} style={{ width: '100%', padding: '12px', background: posting ? '#999' : '#4caf50', color: 'white', border: 'none', borderRadius: '6px', cursor: posting ? 'not-allowed' : 'pointer', fontWeight: 'bold' }}>
+                  {posting ? '⏳ Posting...' : '📤 Post Property FREE'}
+                </button>
                 <button type="button" onClick={() => setShowPostProperty(false)} style={{ width: '100%', marginTop: '10px', padding: '10px', background: '#f0f0f0', border: 'none', borderRadius: '6px', cursor: 'pointer' }}>Cancel</button>
               </form>
             </div>
