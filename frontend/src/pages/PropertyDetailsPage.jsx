@@ -48,9 +48,23 @@ function PropertyDetailsPage() {
       setError(null);
       
       console.log('Fetching property with ID:', propertyId);
-      console.log('API URL:', `${API_URL}/api/properties/${propertyId}`);
       
-      const response = await fetch(`${API_URL}/api/properties/${propertyId}`);
+      // Get token if exists (for admin)
+      const token = localStorage.getItem('token');
+      const headers = {
+        'Content-Type': 'application/json'
+      };
+      
+      // Only add Authorization header if token exists
+      if (token) {
+        headers['Authorization'] = `Bearer ${token}`;
+      }
+      
+      const response = await fetch(`${API_URL}/api/properties/${propertyId}`, {
+        method: 'GET',
+        headers: headers
+      });
+      
       const data = await response.json();
       
       console.log('API Response:', data);
@@ -60,7 +74,10 @@ function PropertyDetailsPage() {
         
         // Fetch similar properties
         try {
-          const similarRes = await fetch(`${API_URL}/api/properties`);
+          const similarRes = await fetch(`${API_URL}/api/properties`, {
+            method: 'GET',
+            headers: headers
+          });
           const similarData = await similarRes.json();
           if (similarData.success) {
             const similar = similarData.data
@@ -88,15 +105,25 @@ function PropertyDetailsPage() {
   const handleInquirySubmit = async (e) => {
     e.preventDefault();
     try {
+      const token = localStorage.getItem('token');
+      const headers = {
+        'Content-Type': 'application/json'
+      };
+      
+      if (token) {
+        headers['Authorization'] = `Bearer ${token}`;
+      }
+      
       const response = await fetch(`${API_URL}/api/leads`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: headers,
         body: JSON.stringify({
           ...lead,
           propertyId: property._id,
           propertyTitle: property.title
         })
       });
+      
       if (response.ok) {
         alert('✅ Thank you! We will contact you shortly.');
         setShowInquiryForm(false);
@@ -128,9 +155,6 @@ function PropertyDetailsPage() {
         <h2 style={{ color: '#E31B23' }}>🔍 {error || 'Property Not Found'}</h2>
         <p style={{ color: '#666', marginTop: '10px' }}>
           The property you're looking for might have been removed or doesn't exist.
-        </p>
-        <p style={{ color: '#999', fontSize: '0.9rem', marginTop: '5px' }}>
-          Property ID: {id}
         </p>
         <button 
           onClick={() => navigate('/buy')}

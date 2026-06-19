@@ -39,7 +39,6 @@ mongoose.connect(MONGODB_URI, {
 .then(() => console.log('✅ MongoDB Connected Successfully!'))
 .catch(err => {
   console.error('❌ MongoDB Connection Error:', err.message);
-  console.log('\n⚠️  Starting with MOCK DATA mode...');
 });
 
 // ========== SCHEMAS ==========
@@ -118,22 +117,10 @@ const agentSchema = new mongoose.Schema({
   createdAt: { type: Date, default: Date.now }
 });
 
-// Interior Schema
-const interiorSchema = new mongoose.Schema({
-  name: String,
-  price: String,
-  style: String,
-  category: String,
-  image: String,
-  vendor: String,
-  phone: String
-});
-
 const User = mongoose.model('User', userSchema);
 const Property = mongoose.model('Property', propertySchema);
 const Lead = mongoose.model('Lead', leadSchema);
 const Agent = mongoose.model('Agent', agentSchema);
-const Interior = mongoose.model('Interior', interiorSchema);
 
 // ========== SAMPLE DATA ==========
 const sampleProperties = [
@@ -203,48 +190,6 @@ const sampleAgents = [
     specialties: ["Luxury Homes", "3BHK+ Properties", "Premium Villas"],
     languages: ["Kannada", "Hindi", "English"],
     about: "15 years of experience in Belgaum real estate. Specialized in luxury properties."
-  },
-  {
-    name: "Belgaum Properties",
-    experience: "12+ years",
-    rating: 4.7,
-    propertiesSold: 38,
-    phone: "+91 98765 43211",
-    email: "info@belgaumproperties.com",
-    image: "👔",
-    location: "Tilakwadi, Belgaum",
-    verified: true,
-    specialties: ["Residential Flats", "Independent Houses", "Plots"],
-    languages: ["Kannada", "Marathi", "English"],
-    about: "Trusted real estate partner in Tilakwadi. Specializing in residential flats."
-  },
-  {
-    name: "City Homes",
-    experience: "10+ years",
-    rating: 4.6,
-    propertiesSold: 32,
-    phone: "+91 98765 43212",
-    email: "cityhomes@belgaumhomes.com",
-    image: "👔",
-    location: "Camp Area, Belgaum",
-    verified: true,
-    specialties: ["Budget Homes", "2BHK Apartments", "Commercial Spaces"],
-    languages: ["Kannada", "Hindi", "Marathi", "English"],
-    about: "10 years of serving Belgaum with affordable housing solutions."
-  },
-  {
-    name: "Shahapur Realty",
-    experience: "8+ years",
-    rating: 4.5,
-    propertiesSold: 28,
-    phone: "+91 98765 43213",
-    email: "shahapurrealty@belgaumhomes.com",
-    image: "👔",
-    location: "Shahapur, Belgaum",
-    verified: true,
-    specialties: ["New Projects", "Under-Construction Properties", "Premium Flats"],
-    languages: ["Kannada", "English"],
-    about: "Specializing in new projects and under-construction properties in Shahapur."
   }
 ];
 
@@ -289,7 +234,8 @@ app.post('/api/auth/register', async (req, res) => {
       password: hashedPassword,
       role: role || 'customer',
       company,
-      location
+      location,
+      verified: role === 'admin' ? true : false
     });
     
     await user.save();
@@ -315,6 +261,7 @@ app.post('/api/auth/register', async (req, res) => {
       }
     });
   } catch (error) {
+    console.error('Registration error:', error);
     res.status(500).json({ success: false, error: error.message });
   }
 });
@@ -361,7 +308,7 @@ app.post('/api/auth/login', async (req, res) => {
   }
 });
 
-// Get user profile
+// Get user profile (Protected)
 app.get('/api/auth/me', async (req, res) => {
   try {
     const token = req.headers.authorization?.split(' ')[1];
@@ -382,17 +329,7 @@ app.get('/api/auth/me', async (req, res) => {
   }
 });
 
-// Get all users (Admin only)
-app.get('/api/auth/users', async (req, res) => {
-  try {
-    const users = await User.find().select('-password');
-    res.json({ success: true, data: users });
-  } catch (error) {
-    res.status(500).json({ success: false, error: error.message });
-  }
-});
-
-// ========== PROPERTY ROUTES ==========
+// ========== PUBLIC PROPERTY ROUTES (No Authentication Required) ==========
 
 // Get all properties
 app.get('/api/properties', async (req, res) => {
@@ -434,13 +371,14 @@ app.get('/api/properties/new-launches', async (req, res) => {
   }
 });
 
-// Get single property
+// Get single property (by ID) - PUBLIC
 app.get('/api/properties/:id', async (req, res) => {
   try {
     const property = await Property.findById(req.params.id);
     if (!property) {
       return res.status(404).json({ success: false, error: 'Property not found' });
     }
+    // Increment view count
     property.views += 1;
     await property.save();
     res.json({ success: true, data: property });
@@ -449,9 +387,22 @@ app.get('/api/properties/:id', async (req, res) => {
   }
 });
 
-// Create property
+// ========== PROTECTED ROUTES (Admin Only) ==========
+
+// Create property (Admin only)
 app.post('/api/properties', async (req, res) => {
   try {
+    // Check if user is admin
+    const token = req.headers.authorization?.split(' ')[1];
+    if (!token) {
+      return res.status(401).json({ success: false, error: 'Authentication required' });
+    }
+    
+    const decoded = jwt.verify(token, process.env.JWT_SECRET || 'belgaum_homes_secret_2024');
+    if (decoded.role !== 'admin') {
+      return res.status(403).json({ success: false, error: 'Admin access required' });
+    }
+    
     const property = new Property(req.body);
     await property.save();
     res.status(201).json({ success: true, data: property });
@@ -460,9 +411,19 @@ app.post('/api/properties', async (req, res) => {
   }
 });
 
-// Update property
+// Update property (Admin only)
 app.put('/api/properties/:id', async (req, res) => {
   try {
+    const token = req.headers.authorization?.split(' ')[1];
+    if (!token) {
+      return res.status(401).json({ success: false, error: 'Authentication required' });
+    }
+    
+    const decoded = jwt.verify(token, process.env.JWT_SECRET || 'belgaum_homes_secret_2024');
+    if (decoded.role !== 'admin') {
+      return res.status(403).json({ success: false, error: 'Admin access required' });
+    }
+    
     const property = await Property.findByIdAndUpdate(req.params.id, req.body, { new: true });
     res.json({ success: true, data: property });
   } catch (error) {
@@ -470,9 +431,19 @@ app.put('/api/properties/:id', async (req, res) => {
   }
 });
 
-// Delete property
+// Delete property (Admin only)
 app.delete('/api/properties/:id', async (req, res) => {
   try {
+    const token = req.headers.authorization?.split(' ')[1];
+    if (!token) {
+      return res.status(401).json({ success: false, error: 'Authentication required' });
+    }
+    
+    const decoded = jwt.verify(token, process.env.JWT_SECRET || 'belgaum_homes_secret_2024');
+    if (decoded.role !== 'admin') {
+      return res.status(403).json({ success: false, error: 'Admin access required' });
+    }
+    
     await Property.findByIdAndDelete(req.params.id);
     res.json({ success: true, message: 'Property deleted' });
   } catch (error) {
@@ -480,9 +451,9 @@ app.delete('/api/properties/:id', async (req, res) => {
   }
 });
 
-// ========== LEAD ROUTES ==========
+// ========== LEAD ROUTES (Public) ==========
 
-// Submit lead
+// Submit lead (Public)
 app.post('/api/leads', async (req, res) => {
   try {
     const lead = new Lead(req.body);
@@ -508,9 +479,19 @@ app.post('/api/leads', async (req, res) => {
   }
 });
 
-// Get all leads
+// Get leads (Admin only)
 app.get('/api/leads', async (req, res) => {
   try {
+    const token = req.headers.authorization?.split(' ')[1];
+    if (!token) {
+      return res.status(401).json({ success: false, error: 'Authentication required' });
+    }
+    
+    const decoded = jwt.verify(token, process.env.JWT_SECRET || 'belgaum_homes_secret_2024');
+    if (decoded.role !== 'admin') {
+      return res.status(403).json({ success: false, error: 'Admin access required' });
+    }
+    
     const leads = await Lead.find().sort({ createdAt: -1 });
     res.json({ success: true, data: leads });
   } catch (error) {
@@ -518,9 +499,19 @@ app.get('/api/leads', async (req, res) => {
   }
 });
 
-// Update lead status
+// Update lead status (Admin only)
 app.put('/api/leads/:id', async (req, res) => {
   try {
+    const token = req.headers.authorization?.split(' ')[1];
+    if (!token) {
+      return res.status(401).json({ success: false, error: 'Authentication required' });
+    }
+    
+    const decoded = jwt.verify(token, process.env.JWT_SECRET || 'belgaum_homes_secret_2024');
+    if (decoded.role !== 'admin') {
+      return res.status(403).json({ success: false, error: 'Admin access required' });
+    }
+    
     const lead = await Lead.findByIdAndUpdate(req.params.id, req.body, { new: true });
     res.json({ success: true, data: lead });
   } catch (error) {
@@ -528,9 +519,29 @@ app.put('/api/leads/:id', async (req, res) => {
   }
 });
 
+// Delete lead (Admin only)
+app.delete('/api/leads/:id', async (req, res) => {
+  try {
+    const token = req.headers.authorization?.split(' ')[1];
+    if (!token) {
+      return res.status(401).json({ success: false, error: 'Authentication required' });
+    }
+    
+    const decoded = jwt.verify(token, process.env.JWT_SECRET || 'belgaum_homes_secret_2024');
+    if (decoded.role !== 'admin') {
+      return res.status(403).json({ success: false, error: 'Admin access required' });
+    }
+    
+    await Lead.findByIdAndDelete(req.params.id);
+    res.json({ success: true, message: 'Lead deleted' });
+  } catch (error) {
+    res.status(500).json({ success: false, error: error.message });
+  }
+});
+
 // ========== AGENT ROUTES ==========
 
-// Get all agents
+// Get all agents (Public)
 app.get('/api/agents', async (req, res) => {
   try {
     const agents = await Agent.find().sort({ rating: -1 });
@@ -540,22 +551,19 @@ app.get('/api/agents', async (req, res) => {
   }
 });
 
-// Get single agent
-app.get('/api/agents/:id', async (req, res) => {
-  try {
-    const agent = await Agent.findById(req.params.id);
-    if (!agent) {
-      return res.status(404).json({ success: false, error: 'Agent not found' });
-    }
-    res.json({ success: true, data: agent });
-  } catch (error) {
-    res.status(500).json({ success: false, error: error.message });
-  }
-});
-
-// Create agent
+// Create agent (Admin only)
 app.post('/api/agents', async (req, res) => {
   try {
+    const token = req.headers.authorization?.split(' ')[1];
+    if (!token) {
+      return res.status(401).json({ success: false, error: 'Authentication required' });
+    }
+    
+    const decoded = jwt.verify(token, process.env.JWT_SECRET || 'belgaum_homes_secret_2024');
+    if (decoded.role !== 'admin') {
+      return res.status(403).json({ success: false, error: 'Admin access required' });
+    }
+    
     const agent = new Agent(req.body);
     await agent.save();
     res.status(201).json({ success: true, data: agent });
@@ -564,13 +572,63 @@ app.post('/api/agents', async (req, res) => {
   }
 });
 
-// ========== INTERIOR ROUTES ==========
-
-// Get all interiors
-app.get('/api/interiors', async (req, res) => {
+// Update agent (Admin only)
+app.put('/api/agents/:id', async (req, res) => {
   try {
-    const interiors = await Interior.find();
-    res.json({ success: true, data: interiors });
+    const token = req.headers.authorization?.split(' ')[1];
+    if (!token) {
+      return res.status(401).json({ success: false, error: 'Authentication required' });
+    }
+    
+    const decoded = jwt.verify(token, process.env.JWT_SECRET || 'belgaum_homes_secret_2024');
+    if (decoded.role !== 'admin') {
+      return res.status(403).json({ success: false, error: 'Admin access required' });
+    }
+    
+    const agent = await Agent.findByIdAndUpdate(req.params.id, req.body, { new: true });
+    res.json({ success: true, data: agent });
+  } catch (error) {
+    res.status(500).json({ success: false, error: error.message });
+  }
+});
+
+// Delete agent (Admin only)
+app.delete('/api/agents/:id', async (req, res) => {
+  try {
+    const token = req.headers.authorization?.split(' ')[1];
+    if (!token) {
+      return res.status(401).json({ success: false, error: 'Authentication required' });
+    }
+    
+    const decoded = jwt.verify(token, process.env.JWT_SECRET || 'belgaum_homes_secret_2024');
+    if (decoded.role !== 'admin') {
+      return res.status(403).json({ success: false, error: 'Admin access required' });
+    }
+    
+    await Agent.findByIdAndDelete(req.params.id);
+    res.json({ success: true, message: 'Agent deleted' });
+  } catch (error) {
+    res.status(500).json({ success: false, error: error.message });
+  }
+});
+
+// ========== USER MANAGEMENT (Admin only) ==========
+
+// Get all users (Admin only)
+app.get('/api/auth/users', async (req, res) => {
+  try {
+    const token = req.headers.authorization?.split(' ')[1];
+    if (!token) {
+      return res.status(401).json({ success: false, error: 'Authentication required' });
+    }
+    
+    const decoded = jwt.verify(token, process.env.JWT_SECRET || 'belgaum_homes_secret_2024');
+    if (decoded.role !== 'admin') {
+      return res.status(403).json({ success: false, error: 'Admin access required' });
+    }
+    
+    const users = await User.find().select('-password');
+    res.json({ success: true, data: users });
   } catch (error) {
     res.status(500).json({ success: false, error: error.message });
   }
@@ -643,7 +701,7 @@ async function startServer() {
   app.listen(PORT, '0.0.0.0', () => {
     console.log(`\n🚀 BELGAUM HOMES BACKEND`);
     console.log(`📡 Server running on port ${PORT}`);
-    console.log(`✅ MongoDB Status: ${mongoose.connection.readyState === 1 ? 'Connected' : 'Using Mock Data'}`);
+    console.log(`✅ MongoDB Status: ${mongoose.connection.readyState === 1 ? 'Connected' : 'Disconnected'}`);
     console.log(`🏥 Health check: http://localhost:${PORT}/api/health`);
     console.log(`🏠 Root: http://localhost:${PORT}/\n`);
   });
